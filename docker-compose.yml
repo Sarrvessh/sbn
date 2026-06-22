@@ -1,0 +1,78 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: aiobs_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: ai_observability
+      MYSQL_USER: sbn
+      MYSQL_PASSWORD: sbn_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    container_name: aiobs_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: mongosh --eval "db.runCommand('ping')" --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aiobs_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://sbn:sbn_password@mysql:3306/ai_observability
+      MONGODB_URL: mongodb://mongo:27017/ai_observability
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      DEFAULT_AGENT_MODEL: ${DEFAULT_AGENT_MODEL:-gpt-4o-mini}
+      LATENCY_ALERT_THRESHOLD_MS: ${LATENCY_ALERT_THRESHOLD_MS:-1500}
+      COST_ALERT_THRESHOLD: ${COST_ALERT_THRESHOLD:-0.05}
+      API_KEY_HEADER_NAME: ${API_KEY_HEADER_NAME:-X-API-Key}
+      BOOTSTRAP_ADMIN_API_KEY: ${BOOTSTRAP_ADMIN_API_KEY:-admin-local-dev-key}
+      BOOTSTRAP_ANALYST_API_KEY: ${BOOTSTRAP_ANALYST_API_KEY:-analyst-local-dev-key}
+      BOOTSTRAP_VIEWER_API_KEY: ${BOOTSTRAP_VIEWER_API_KEY:-viewer-local-dev-key}
+      BOOTSTRAP_INGEST_API_KEY: ${BOOTSTRAP_INGEST_API_KEY:-ingest-local-dev-key}
+      BOOTSTRAP_ANALYST_PROJECT_SCOPE: ${BOOTSTRAP_ANALYST_PROJECT_SCOPE:-}
+      BOOTSTRAP_VIEWER_PROJECT_SCOPE: ${BOOTSTRAP_VIEWER_PROJECT_SCOPE:-}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: aiobs_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  mysql_data:
+  mongo_data:

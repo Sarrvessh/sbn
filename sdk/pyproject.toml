@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sbn-sdk"
+version = "0.1.0"
+description = "SDK for AI observability and governance telemetry interception"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "httpx>=0.27.0",
+  "pydantic>=2.7.0",
+]
+
+[tool.setuptools]
+packages = ["sbn_sdk", "sbn_sdk.integrations"]

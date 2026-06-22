@@ -1,0 +1,14 @@
+node_modules/
+.venv/
+__pycache__/
+.git/
+.gitignore
+.env
+*.pyc
+.tox/
+.coverage
+htmlcov/
+dist/
+*.egg-info/
+.idea/
+.vscode/

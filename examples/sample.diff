@@ -1,0 +1,77 @@
+diff --git a/app/api/v1/endpoints/analyzer.py b/app/api/v1/endpoints/analyzer.py
+index a1b2c3d..e4f5g6h 100644
+--- a/app/api/v1/endpoints/analyzer.py
++++ b/app/api/v1/endpoints/analyzer.py
+@@ -45,7 +45,8 @@ async def agent_run(
+         raise HTTPException(status_code=400, detail=str(exc))
+
+-    governance_reasons = evaluate_governance(request.prompt)
++    from app.services.pii_redaction_service import redact_text
++    sanitized = redact_text(request.prompt)
++    governance_reasons = evaluate_governance(sanitized)
+     flagged = len(governance_reasons) > 0
+
+     trace_record = TraceCreateRequest(
+diff --git a/app/services/governance_service.py b/app/services/governance_service.py
+index b2c3d4e..f5g6h7i 100644
+--- a/app/services/governance_service.py
++++ b/app/services/governance_service.py
+@@ -1,5 +1,6 @@
+ """Governance policy evaluation service."""
+
++import re
+ from typing import Any
+
+ _PII_PATTERNS: list[str] = [
+@@ -12,9 +13,13 @@ _PII_PATTERNS: list[str] = [
+
+ def evaluate_governance(text: str) -> list[str]:
+-    """Check text against governance policies (PII, secrets, custom rules)."""
++    """Check text against governance policies with PII pre-redaction."""
+     reasons: list[str] = []
+     for pattern in _PII_PATTERNS:
+         if pattern in text.lower():
+             reasons.append(f"Flagged: pattern '{pattern}' detected")
++    # Check for API keys
++    if re.search(r'\b(sk-or-[A-Za-z0-9-]{20,}|sk-[A-Za-z0-9]{20,})\b', text):
++        reasons.append("Flagged: potential API key detected")
++    # Custom blocklist
++    if "password" in text.lower():
++        reasons.append("Flagged: sensitive keyword 'password' detected")
+     return reasons
+diff --git a/tests/test_governance.py b/tests/test_governance.py
+new file mode 100644
+index 0000000..a1b2c3d
+--- /dev/null
++++ b/tests/test_governance.py
+@@ -0,0 +1,35 @@
++"""Tests for governance service."""
++
++from app.services.governance_service import evaluate_governance
++
++
++def test_pii_detection():
++    reasons = evaluate_governance("my email is user@example.com")
++    assert len(reasons) > 0
++
++
++def test_api_key_detection():
++    reasons = evaluate_governance("using key sk-or-v1-abc123def456ghi789jkl")
++    assert len(reasons) > 0
++
++
++def test_clean_prompt():
++    reasons = evaluate_governance("Hello, how are you?")
++    assert len(reasons) == 0
+diff --git a/requirements/backend.txt b/requirements/backend.txt
+index c3d4e5f..g6h7i8j 100644
+--- a/requirements/backend.txt
++++ b/requirements/backend.txt
+@@ -3,6 +3,7 @@ fastapi>=0.110.0
+ uvicorn[standard]>=0.29.0
+ sqlalchemy>=2.0.30
+ pymysql>=1.1.0
++httpx>=0.27.0
+ pydantic-settings>=2.2.0
+ python-dotenv>=1.0.1
+ motor>=3.4.0

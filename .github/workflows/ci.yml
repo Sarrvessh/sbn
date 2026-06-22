@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: ai_observability
+          MYSQL_USER: sbn
+          MYSQL_PASSWORD: sbn_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -uroot -proot_password"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand(\"ping\")' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/backend.txt
+          pip install -e ./sdk
+
+      - name: Lint with ruff
+        run: ruff check app/ tests/ sdk/sbn_sdk/
+
+      - name: Type check with mypy
+        run: mypy app/ sdk/sbn_sdk/
+
+      - name: Run unit tests
+        run: pytest tests/ -v --ignore=tests/test_integration.py -k "not integration"
+        env:
+          DATABASE_URL: mysql+pymysql://sbn:sbn_password@localhost:3306/ai_observability
+          MONGODB_URL: mongodb://localhost:27017/ai_observability
+
+      - name: Run integration tests
+        run: pytest tests/test_integration.py -v
+        env:
+          DATABASE_URL: mysql+pymysql://sbn:sbn_password@localhost:3306/ai_observability
+          MONGODB_URL: mongodb://localhost:27017/ai_observability
+          BACKEND_BASE_URL: http://localhost:8000
+          SBN_API_KEY: admin-local-dev-key
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BOOTSTRAP_ADMIN_API_KEY: admin-local-dev-key
+          BOOTSTRAP_ANALYST_API_KEY: analyst-local-dev-key
+          BOOTSTRAP_VIEWER_API_KEY: viewer-local-dev-key
+          BOOTSTRAP_INGEST_API_KEY: ingest-local-dev-key
