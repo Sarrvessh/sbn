@@ -1,4 +1,4 @@
-# AI Observability and Governance Platform
+# SBN ARMS
 
 Enterprise-grade realtime analyzer for AI agents. This project combines live model execution, telemetry ingestion, governance checks, anomaly alerts, and dashboarding.
 
