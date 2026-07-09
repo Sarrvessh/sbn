@@ -114,10 +114,11 @@ def create_application() -> FastAPI:
 
     @application.get("/readyz", tags=["health"])
     async def readiness() -> JSONResponse:
+        from sqlalchemy import text
         from app.db.session import SessionLocal
         try:
             db = SessionLocal()
-            db.execute(db.bind.dialect.statement_compiler(db.bind.dialect, None).__class__)
+            db.execute(text("SELECT 1"))
             db.close()
         except Exception:
             return JSONResponse(status_code=503, content={"status": "unavailable", "detail": "database unreachable"})
