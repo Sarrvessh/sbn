@@ -93,7 +93,7 @@ class TraceRepository:
         def _fn():
             session = self._session()
             try:
-                query = session.query(func.count(Trace.id)).where(Trace.flagged_for_governance == True)
+                query = session.query(func.count(Trace.id)).where(Trace.flagged_for_governance)
                 query = self._apply_project_filter(query, project_names)
                 result = query.scalar()
                 return int(result or 0)
@@ -115,7 +115,7 @@ class TraceRepository:
         def _fn():
             session = self._session()
             try:
-                query = session.query(Trace).where(Trace.flagged_for_governance == True)
+                query = session.query(Trace).where(Trace.flagged_for_governance)
                 query = self._apply_project_filter(query, project_names)
                 return query.order_by(Trace.timestamp.desc()).limit(limit).all()
             finally:

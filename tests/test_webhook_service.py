@@ -6,7 +6,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.base import Base
-from app.db.models import Webhook
 from app.repositories.webhook_repository import WebhookRepository
 from app.schemas.webhook import WebhookCreate, WebhookUpdate
 

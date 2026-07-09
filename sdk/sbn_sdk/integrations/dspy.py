@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
-from sbn_sdk.integrations.base import IntegrationTracer, IntegrationSpan
+from sbn_sdk.integrations.base import IntegrationTracer
 
 logger = logging.getLogger(__name__)
 

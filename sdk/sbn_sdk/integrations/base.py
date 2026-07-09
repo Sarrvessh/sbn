@@ -4,8 +4,8 @@ from __future__ import annotations
 import logging
 import random
 import uuid
-from threading import Lock
 from datetime import datetime, timezone
+from threading import Lock
 from time import perf_counter
 
 from sbn_sdk.client import get_or_create_client

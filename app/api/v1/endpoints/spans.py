@@ -7,7 +7,12 @@ from app.core.security import Principal, require_roles
 from app.db.session import get_db
 from app.repositories.span_repository import SpanRepository
 from app.repositories.trace_repository import TraceRepository
-from app.schemas.span import SpanCreateRequest, SpanResponse, SpanTreeResponse, SpanUpdateRequest
+from app.schemas.span import (
+    SpanCreateRequest,
+    SpanResponse,
+    SpanTreeResponse,
+    SpanUpdateRequest,
+)
 from app.services.span_service import SpanService
 
 router = APIRouter(prefix="")

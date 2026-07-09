@@ -7,10 +7,10 @@ from fastapi import HTTPException
 
 from app.core.security import (
     Principal,
+    _parse_project_scopes,
     require_roles,
     resolve_project_scope,
     resolve_project_scopes,
-    _parse_project_scopes,
 )
 
 

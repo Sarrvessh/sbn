@@ -4,13 +4,13 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from sbn_sdk.integrations.base import IntegrationTracer, IntegrationSpan
+from sbn_sdk.integrations.base import IntegrationTracer
 
 logger = logging.getLogger(__name__)
 
 try:
-    from haystack.core.pipeline import Pipeline
     from haystack.core.component import Component
+    from haystack.core.pipeline import Pipeline
 except ImportError:
     Pipeline = None
     Component = None
@@ -39,7 +39,7 @@ def instrument(
         components = getattr(self, "components", {})
         inputs = {k: str(v)[:200] for k, v in (data or {}).items()}
         span = tracer.create_span(
-            name=f"haystack:pipeline",
+            name="haystack:pipeline",
             span_type="haystack",
             input_text=str(inputs)[:500],
         )

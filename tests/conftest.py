@@ -4,19 +4,21 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 import pytest
 import pytest_asyncio
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.config import get_settings
-from app.db.base import Base
-from app.repositories.trace_repository import TraceRepository
-from app.schemas.trace import TraceIngestRequest
+if TYPE_CHECKING:
+    from app.db.models import Trace
 
 # Override settings for tests
 from app import db  # noqa: F401
+from app.db.base import Base
+from app.repositories.trace_repository import TraceRepository
+from app.schemas.trace import TraceIngestRequest
 
 
 @pytest.fixture(scope="session")
@@ -60,7 +62,6 @@ def sample_trace_payload() -> TraceIngestRequest:
 
 @pytest_asyncio.fixture
 async def seeded_traces(trace_repository: TraceRepository) -> list[Trace]:
-    from app.db.models import Trace
     traces_data = [
         TraceIngestRequest(
             request_id=f"seed-req-{i:03d}",

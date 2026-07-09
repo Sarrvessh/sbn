@@ -6,7 +6,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.services.realtime_event_publisher import _safe_preview, publish_trace_update_event
+from app.services.realtime_event_publisher import (
+    _safe_preview,
+    publish_trace_update_event,
+)
 
 
 class TestSafePreview:

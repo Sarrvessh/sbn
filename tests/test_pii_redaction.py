@@ -1,7 +1,7 @@
 """Tests for PII redaction service."""
 from __future__ import annotations
 
-from app.services.pii_redaction_service import redact_text, redact_dict
+from app.services.pii_redaction_service import redact_dict, redact_text
 
 
 class TestRedactText:

@@ -7,7 +7,11 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.models import AlertRule
 from app.repositories.trace_repository import TraceRepository
-from app.schemas.analytics import AlertResponse, RealtimeMetricsResponse, RecentTraceResponse
+from app.schemas.analytics import (
+    AlertResponse,
+    RealtimeMetricsResponse,
+    RecentTraceResponse,
+)
 from app.services.cache_service import metrics_cache
 
 
@@ -88,7 +92,9 @@ class RealtimeAnalyzerService:
 
         rule_repo: "AlertRuleRepository | None" = None
         if db is not None:
-            from app.repositories.alert_rule_repository import AlertRuleRepository  # noqa: C0415
+            from app.repositories.alert_rule_repository import (
+                AlertRuleRepository,  # noqa: C0415
+            )
             rule_repo = AlertRuleRepository(db)
 
         for trace in traces:

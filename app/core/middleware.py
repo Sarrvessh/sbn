@@ -8,7 +8,10 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.services.metrics_service import http_request_duration_seconds, http_requests_total
+from app.services.metrics_service import (
+    http_request_duration_seconds,
+    http_requests_total,
+)
 
 logger = logging.getLogger("app.middleware")
 

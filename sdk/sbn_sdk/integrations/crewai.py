@@ -4,12 +4,14 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from sbn_sdk.integrations.base import IntegrationTracer, IntegrationSpan
+from sbn_sdk.integrations.base import IntegrationSpan, IntegrationTracer
 
 logger = logging.getLogger(__name__)
 
 try:
-    from crewai import Agent as CrewAgent, Task as CrewTask, Crew
+    from crewai import Agent as CrewAgent
+    from crewai import Crew
+    from crewai import Task as CrewTask
     from crewai.tasks.task_output import TaskOutput
 except ImportError:
     CrewAgent = None
@@ -41,7 +43,6 @@ class SbnCrewAIHandler:
         self._task_spans[task_id] = span
 
         try:
-            from crewai.task import Task as InternalTask
             if hasattr(task, "execute") and callable(task.execute):
                 result = task.execute()
             elif hasattr(task, "_execute") and callable(task._execute):

@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import logging
+import os
 import traceback
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-import os
-
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -118,6 +117,7 @@ def create_application() -> FastAPI:
     @application.get("/readyz", tags=["health"])
     async def readiness() -> JSONResponse:
         from sqlalchemy import text
+
         from app.db.session import SessionLocal
         try:
             db = SessionLocal()

@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import pytest
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse, Response
 from starlette.testclient import TestClient
 
 from app.main import app

@@ -11,11 +11,10 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from app.core.config import settings
 from app.db.base import Base
@@ -120,10 +119,10 @@ def _seed_bootstrap_keys(db: Session) -> None:
 
 
 def _seed_default_policies(db: Session) -> None:
-    from app.repositories.policy_repository import PolicyRepository
-    from app.schemas.policy import PolicyCreateRequest
     from app.repositories.escalation_rule_repository import EscalationRuleRepository
+    from app.repositories.policy_repository import PolicyRepository
     from app.schemas.escalation import EscalationRuleCreate
+    from app.schemas.policy import PolicyCreateRequest
     repo = PolicyRepository(db)
     default_policies = [
         PolicyCreateRequest(

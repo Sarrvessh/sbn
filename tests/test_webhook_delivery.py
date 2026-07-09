@@ -1,10 +1,15 @@
 """Tests for webhook delivery logic (retry, signature, fan-out)."""
 from __future__ import annotations
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.webhook_service import _compute_signature, deliver_webhook, deliver_event
+import pytest
+
+from app.services.webhook_service import (
+    _compute_signature,
+    deliver_event,
+    deliver_webhook,
+)
 from app.services.webhook_service import test_webhook_delivery as _test_webhook_svc
 
 

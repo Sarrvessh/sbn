@@ -9,7 +9,17 @@ from datetime import datetime, timezone
 from time import perf_counter
 from uuid import uuid4
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, WebSocket, WebSocketDisconnect, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -24,7 +34,13 @@ from app.db.session import get_db
 from app.repositories.span_repository import SpanRepository
 from app.repositories.trace_repository import TraceRepository
 from app.schemas.agent import AgentRunRequest, AgentRunResponse
-from app.schemas.analytics import AlertResponse, GovernanceMetricsResponse, RealtimeMetricsResponse, RecentTraceResponse, SystemMetricsResponse
+from app.schemas.analytics import (
+    AlertResponse,
+    GovernanceMetricsResponse,
+    RealtimeMetricsResponse,
+    RecentTraceResponse,
+    SystemMetricsResponse,
+)
 from app.schemas.trace import TraceIngestRequest
 from app.services.event_stream_service import event_stream_service
 from app.services.governance_service import evaluate_governance
@@ -170,9 +186,11 @@ async def get_governance_metrics(
     flagged = await trace_repo.get_governance_flagged_count(project_names=scoped_projects)
     flag_rate = round((flagged / total * 100), 2) if total > 0 else 0.0
 
+    from sqlalchemy import func as sa_func
+    from sqlalchemy import select
+
     from app.db.models import Review
     from app.repositories.review_repository import ReviewRepository
-    from sqlalchemy import select, func as sa_func
 
     review_repo = ReviewRepository(db)
     pending_ids = review_repo.list_pending_request_ids()

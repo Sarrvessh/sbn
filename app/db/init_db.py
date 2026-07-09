@@ -3,9 +3,6 @@
 from __future__ import annotations
 
 import logging
-import time
-
-logger = logging.getLogger("app")
 
 from app.core.config import settings
 from app.db.models import Trace
@@ -16,6 +13,8 @@ from app.repositories.policy_repository import PolicyRepository
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.escalation import EscalationRuleCreate
 from app.schemas.policy import PolicyCreateRequest
+
+logger = logging.getLogger("app")
 
 
 def initialize_database(max_retries: int = 10, retry_delay_seconds: int = 2) -> None:

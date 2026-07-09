@@ -9,7 +9,11 @@ from sqlalchemy.orm import Session
 from app.core.security import Principal, require_roles
 from app.db.session import get_db
 from app.repositories.api_key_repository import ApiKeyRepository
-from app.schemas.auth import ApiKeyCreateRequest, ApiKeyCreateResponse, ApiKeyInfoResponse
+from app.schemas.auth import (
+    ApiKeyCreateRequest,
+    ApiKeyCreateResponse,
+    ApiKeyInfoResponse,
+)
 
 router = APIRouter(prefix="")
 
