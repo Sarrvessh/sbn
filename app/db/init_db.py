@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 import time
 
 from sqlalchemy.exc import OperationalError
+
+
+logger = logging.getLogger("app")
 
 from app.core.config import settings
 from app.db.models import Trace
@@ -35,6 +39,9 @@ def _init_postgres(max_retries: int, retry_delay_seconds: int) -> None:
             if attempt == max_retries:
                 raise
             time.sleep(retry_delay_seconds)
+        except Exception:
+            logger.exception("Non-connection error during DB init — continuing")
+            return
 
 
 def backfill_projects() -> None:

@@ -48,17 +48,24 @@ def _run_migrations() -> None:
         alembic_cfg = AlembicConfig("alembic.ini")
         command.upgrade(alembic_cfg, "head")
         logger.info("Database migrations applied successfully")
-    except Exception as exc:
-        logger.warning("Failed to run migrations (may be acceptable if tables already exist): %s", exc)
+    except Exception:
+        logger.exception("Migration failed — continuing")
+
+
+def _initialize_app() -> None:
+    _validate_prod_settings()
+    try:
+        _run_migrations()
+        initialize_database()
+        backfill_projects()
+    except Exception:
+        logger.exception("App initialization failed — continuing")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     configure_logging()
-    _validate_prod_settings()
-    _run_migrations()
-    initialize_database()
-    backfill_projects()
+    _initialize_app()
     yield
 
 
