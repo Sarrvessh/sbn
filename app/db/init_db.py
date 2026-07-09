@@ -5,14 +5,11 @@ from __future__ import annotations
 import logging
 import time
 
-from sqlalchemy.exc import OperationalError
-
-
 logger = logging.getLogger("app")
 
 from app.core.config import settings
 from app.db.models import Trace
-from app.db.session import SessionLocal, engine
+from app.db.session import SessionLocal
 from app.repositories.api_key_repository import ApiKeyRepository
 from app.repositories.escalation_rule_repository import EscalationRuleRepository
 from app.repositories.policy_repository import PolicyRepository
@@ -22,26 +19,16 @@ from app.schemas.policy import PolicyCreateRequest
 
 
 def initialize_database(max_retries: int = 10, retry_delay_seconds: int = 2) -> None:
-    """Initialize PostgreSQL tables (with retry) and seed defaults."""
-    _init_postgres(max_retries, retry_delay_seconds)
-
-
-def _init_postgres(max_retries: int, retry_delay_seconds: int) -> None:
-    """Create tables if they don't exist and seed API keys."""
-    for attempt in range(1, max_retries + 1):
-        try:
-            from app.db.base import Base
-            Base.metadata.create_all(bind=engine)
-            _seed_bootstrap_api_keys()
-            _seed_default_policies()
-            return
-        except OperationalError:
-            if attempt == max_retries:
-                raise
-            time.sleep(retry_delay_seconds)
-        except Exception:
-            logger.exception("Non-connection error during DB init — continuing")
-            return
+    """Run seeds and backfill (tables already created by Alembic)."""
+    try:
+        _seed_bootstrap_api_keys()
+        logger.info("Bootstrap API keys seeded")
+        _seed_default_policies()
+        logger.info("Default policies seeded")
+        backfill_projects()
+        logger.info("Projects backfilled")
+    except Exception:
+        logger.exception("Non-fatal error during DB init — continuing")
 
 
 def backfill_projects() -> None:

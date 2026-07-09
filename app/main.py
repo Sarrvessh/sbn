@@ -7,8 +7,6 @@ import traceback
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from alembic import command
-from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -23,7 +21,7 @@ from app.api.v1.router import api_router
 from app.core.config import get_cors_origins, settings
 from app.core.logging_config import configure_logging
 from app.core.middleware import RequestTimingMiddleware
-from app.db.init_db import backfill_projects, initialize_database
+from app.db.init_db import initialize_database
 from app.services.metrics_service import registry
 
 logger = logging.getLogger("app")
@@ -43,31 +41,13 @@ def _validate_prod_settings() -> None:
         logger.warning("Production configuration warning: %s", error)
 
 
-def _run_migrations() -> None:
-    import time as _time
-    t0 = _time.time()
-    try:
-        alembic_cfg = AlembicConfig("alembic.ini")
-        logger.info("Starting Alembic upgrade...")
-        command.upgrade(alembic_cfg, "head")
-        logger.info("Database migrations applied successfully (%.2fs)", _time.time() - t0)
-    except Exception:
-        logger.exception("Migration failed after %.2fs — continuing", _time.time() - t0)
-
-
 def _initialize_app() -> None:
     import time as _time
     _validate_prod_settings()
     try:
         t0 = _time.time()
-        _run_migrations()
-        logger.info("Migrations done in %.2fs", _time.time() - t0)
-        t0 = _time.time()
         initialize_database()
         logger.info("DB init done in %.2fs", _time.time() - t0)
-        t0 = _time.time()
-        backfill_projects()
-        logger.info("Backfill done in %.2fs", _time.time() - t0)
     except Exception:
         logger.exception("App initialization failed — continuing")
 
