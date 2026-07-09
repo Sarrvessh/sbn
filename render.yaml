@@ -9,7 +9,7 @@ databases:
 services:
   - type: web
     name: sbn-api
-    runtime: image
+    runtime: docker
     plan: free
     region: oregon
     dockerfilePath: Dockerfile.backend
@@ -44,7 +44,5 @@ services:
         value: "5"
       - key: DB_MAX_OVERFLOW
         value: "10"
-      - key: PYTHON_VERSION
-        value: "3.12.9"
     healthCheckPath: /health
     autoDeploy: true
