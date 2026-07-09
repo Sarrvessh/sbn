@@ -37,7 +37,7 @@ services:
       - key: RATE_LIMIT_PER_MINUTE
         value: "60"
       - key: ENFORCE_TRUSTED_HOSTS
-        value: "true"
+        value: "false"
       - key: TRUSTED_HOSTS
         value: ".onrender.com,localhost,127.0.0.1"
       - key: DB_POOL_SIZE
