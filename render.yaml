@@ -46,4 +46,3 @@ services:
         value: "10"
     healthCheckPath: /health
     autoDeploy: true
-    releaseCommand: alembic upgrade head
