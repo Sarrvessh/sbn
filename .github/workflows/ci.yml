@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: pip install ruff bandit safety
+      - run: pip install "ruff>=0.7" bandit safety
       - run: ruff check app/ tests/ sdk/
       - run: bandit -r app/ -f json --quiet || true
 
@@ -46,6 +46,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements/backend.txt
+      - run: pip install -e sdk/
       - run: python -m pytest tests/ -v --tb=short --ignore=tests/test_e2e_api.py --ignore=tests/test_integration.py -x
         env:
           DATABASE_URL: sqlite:///test.db
