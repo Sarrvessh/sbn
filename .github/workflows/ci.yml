@@ -47,6 +47,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements/backend.txt
       - run: pip install -e sdk/
+      - run: pip install langchain-core langgraph
       - run: python -m pytest tests/ -v --tb=short --ignore=tests/test_e2e_api.py --ignore=tests/test_integration.py -x
         env:
           DATABASE_URL: sqlite:///test.db
