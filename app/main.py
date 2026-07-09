@@ -44,29 +44,44 @@ def _validate_prod_settings() -> None:
 
 
 def _run_migrations() -> None:
+    import time as _time
+    t0 = _time.time()
     try:
         alembic_cfg = AlembicConfig("alembic.ini")
+        logger.info("Starting Alembic upgrade...")
         command.upgrade(alembic_cfg, "head")
-        logger.info("Database migrations applied successfully")
+        logger.info("Database migrations applied successfully (%.2fs)", _time.time() - t0)
     except Exception:
-        logger.exception("Migration failed — continuing")
+        logger.exception("Migration failed after %.2fs — continuing", _time.time() - t0)
 
 
 def _initialize_app() -> None:
+    import time as _time
     _validate_prod_settings()
     try:
+        t0 = _time.time()
         _run_migrations()
+        logger.info("Migrations done in %.2fs", _time.time() - t0)
+        t0 = _time.time()
         initialize_database()
+        logger.info("DB init done in %.2fs", _time.time() - t0)
+        t0 = _time.time()
         backfill_projects()
+        logger.info("Backfill done in %.2fs", _time.time() - t0)
     except Exception:
         logger.exception("App initialization failed — continuing")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    import time as _time
+    t0 = _time.time()
     configure_logging()
+    logger.info("App startup started")
     _initialize_app()
+    logger.info("App startup complete in %.2fs", _time.time() - t0)
     yield
+    logger.info("App shutting down")
 
 
 def create_application() -> FastAPI:
