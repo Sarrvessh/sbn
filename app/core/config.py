@@ -85,14 +85,6 @@ class Settings(BaseSettings):
     rate_limit_per_minute: int = Field(default=60, ge=1, validation_alias="RATE_LIMIT_PER_MINUTE")
     rate_limit_enabled: bool = Field(default=True, validation_alias="RATE_LIMIT_ENABLED")
 
-    trusted_hosts: str = Field(
-        default="localhost,127.0.0.1,0.0.0.0",
-        validation_alias="TRUSTED_HOSTS",
-    )
-    enforce_trusted_hosts: bool = Field(
-        default=False, validation_alias="ENFORCE_TRUSTED_HOSTS",
-    )
-
     app_start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     model_config = SettingsConfigDict(

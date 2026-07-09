@@ -14,7 +14,6 @@ from pydantic import ValidationError
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.responses import JSONResponse, PlainTextResponse
 
 from app.api.v1.router import api_router
@@ -70,13 +69,6 @@ def create_application() -> FastAPI:
         version=settings.app_version,
         lifespan=lifespan,
     )
-
-    if settings.enforce_trusted_hosts:
-        allowed_hosts = [h.strip() for h in settings.trusted_hosts.split(",") if h.strip()]
-        application.add_middleware(
-            TrustedHostMiddleware,
-            allowed_hosts=allowed_hosts,
-        )
 
     application.add_middleware(
         CORSMiddleware,

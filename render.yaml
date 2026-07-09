@@ -38,8 +38,6 @@ services:
         value: "60"
       - key: ENFORCE_TRUSTED_HOSTS
         value: "false"
-      - key: TRUSTED_HOSTS
-        value: ".onrender.com,localhost,127.0.0.1"
       - key: DB_POOL_SIZE
         value: "5"
       - key: DB_MAX_OVERFLOW
