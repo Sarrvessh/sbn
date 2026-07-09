@@ -7,9 +7,12 @@ import traceback
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
+import os
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -135,6 +138,12 @@ def create_application() -> FastAPI:
             media_type="text/plain; version=0.0.4",
             headers={"Cache-Control": "no-cache"},
         )
+
+    frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+    if os.path.isdir(frontend_dist):
+        application.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+    else:
+        logger.warning("Frontend dist not found at %s — serving API only", frontend_dist)
 
     return application
 
