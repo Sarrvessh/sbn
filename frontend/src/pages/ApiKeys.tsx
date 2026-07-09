@@ -88,7 +88,7 @@ export default function ApiKeys() {
                 <div className="flex gap-2">
                   <button onClick={() => createMut.mutate()} disabled={createMut.isPending} className="btn btn-primary btn-sm">{createMut.isPending ? "Creating…" : "Create Key"}</button>
                 </div>
-                {createMut.isError && <p style={{ fontSize: 11, color: "#ff3b30" }}>{(createMut.error as Error)?.message}</p>}
+                {createMut.isError && <p style={{ fontSize: 11, color: "#ff3b30" }}>{createMut.error?.message}</p>}
               </div>
             )}
           </div>

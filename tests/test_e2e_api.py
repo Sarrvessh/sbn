@@ -1060,3 +1060,102 @@ class TestRBACEnforcement:
     def test_analyst_can_access_reviews(self, client: TestClient, analyst_headers: dict) -> None:
         resp = client.get("/api/v1/reviews/pending", headers=analyst_headers)
         assert resp.status_code == 200
+
+
+class TestSSE:
+    def test_sse_requires_auth(self, client: TestClient) -> None:
+        resp = client.get("/api/v1/events/stream")
+        assert resp.status_code in (401, 403)
+
+    @pytest.mark.integration
+    def test_sse_connect_returns_streaming_response(self, client: TestClient, viewer_headers: dict) -> None:
+        with client.stream("GET", "/api/v1/events/stream", headers=viewer_headers) as resp:
+            assert resp.status_code == 200
+            assert resp.headers.get("content-type") == "text/event-stream"
+
+
+class TestAgentRun:
+    @pytest.mark.integration
+    def test_agent_run_requires_auth(self, client: TestClient) -> None:
+        resp = client.post("/api/v1/agent/run", json={})
+        assert resp.status_code in (401, 403)
+
+    @pytest.mark.integration
+    def test_agent_run_validates_payload(self, client: TestClient, admin_headers: dict) -> None:
+        resp = client.post("/api/v1/agent/run", headers=admin_headers, json={})
+        assert resp.status_code in (400, 422)
+
+
+class TestSpansEndpoint:
+    def test_create_and_list_spans(self, client: TestClient, ingest_headers: dict, viewer_headers: dict) -> None:
+        trace_id = str(uuid4().hex[:32])
+        span_id = str(uuid4().hex[:16])
+        request_id = str(uuid4().hex[:20])
+        now = datetime.now(timezone.utc).isoformat()
+
+        payload = {
+            "trace_id": trace_id,
+            "span_id": span_id,
+            "trace_request_id": request_id,
+            "name": "test-span",
+            "span_type": "llm",
+            "started_at": now,
+            "ended_at": now,
+        }
+        resp = client.post(f"/api/v1/traces/{request_id}/spans", headers=ingest_headers, json=payload)
+        assert resp.status_code == 201
+
+        resp = client.get(f"/api/v1/traces/{request_id}/spans", headers=viewer_headers)
+        assert resp.status_code == 200
+
+    def test_patch_span(self, client: TestClient, ingest_headers: dict, viewer_headers: dict) -> None:
+        trace_id = str(uuid4().hex[:32])
+        span_id = str(uuid4().hex[:16])
+        request_id = str(uuid4().hex[:20])
+        now = datetime.now(timezone.utc).isoformat()
+
+        create_payload = {
+            "trace_id": trace_id,
+            "span_id": span_id,
+            "trace_request_id": request_id,
+            "name": "test-span",
+            "span_type": "llm",
+            "started_at": now,
+        }
+        client.post(f"/api/v1/traces/{request_id}/spans", headers=ingest_headers, json=create_payload)
+
+        resp = client.patch(f"/api/v1/spans/{span_id}", headers=ingest_headers, json={"output": "updated"})
+        assert resp.status_code == 200
+
+    def test_span_tree(self, client: TestClient, ingest_headers: dict, viewer_headers: dict) -> None:
+        trace_id = str(uuid4().hex[:32])
+        parent_id = str(uuid4().hex[:16])
+        child_id = str(uuid4().hex[:16])
+        request_id = str(uuid4().hex[:20])
+        now = datetime.now(timezone.utc).isoformat()
+
+        for sid in [parent_id, child_id]:
+            client.post(f"/api/v1/traces/{request_id}/spans", headers=ingest_headers, json={
+                "trace_id": trace_id,
+                "span_id": sid,
+                "trace_request_id": request_id,
+                "parent_span_id": None if sid == parent_id else parent_id,
+                "name": f"span-{sid[:8]}",
+                "span_type": "llm",
+                "started_at": now,
+            })
+        resp = client.get(f"/api/v1/traces/{request_id}/spans/tree", headers=viewer_headers)
+        assert resp.status_code == 200
+
+
+class TestReplay:
+    @pytest.mark.integration
+    def test_replay_requires_existing_trace(self, client: TestClient, viewer_headers: dict) -> None:
+        resp = client.post("/api/v1/traces/nonexistent/replay", headers=viewer_headers)
+        assert resp.status_code == 404
+
+
+class TestEscalatedReviews:
+    def test_escalated_endpoint(self, client: TestClient, analyst_headers: dict) -> None:
+        resp = client.get("/api/v1/reviews/escalated", headers=analyst_headers)
+        assert resp.status_code == 200

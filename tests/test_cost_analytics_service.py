@@ -51,6 +51,7 @@ def service(mock_trace_repo, mock_team_repo, mock_budget_repo):
 
 
 class TestCostAnalyticsService:
+    @pytest.mark.asyncio
     async def test_get_cost_analytics_empty(self, service):
         result = await service.get_cost_analytics()
         assert result.total_cost == 0.0
@@ -62,6 +63,7 @@ class TestCostAnalyticsService:
         assert result.by_model == []
         assert result.by_project == []
 
+    @pytest.mark.asyncio
     async def test_get_cost_analytics_with_data(self, service, mock_trace_repo):
         mock_trace_repo.get_total_cost.return_value = 12.5
         mock_trace_repo.get_total_tokens.return_value = 700
@@ -92,10 +94,12 @@ class TestCostAnalyticsService:
         assert len(result.by_project) == 2
         assert result.by_project[0].project_name == "proj-a"
 
+    @pytest.mark.asyncio
     async def test_get_team_costs_empty(self, service):
         result = await service.get_team_costs()
         assert result == []
 
+    @pytest.mark.asyncio
     async def test_get_team_costs_with_budget(self, service, mock_trace_repo, mock_team_repo, mock_budget_repo):
         teams = [Team(id=1, name="Engineering", description=None)]
         assignments = [TeamProjectAssignment(id=1, team_id=1, project_name="proj-a")]
@@ -123,8 +127,12 @@ class TestTeamRepository:
 
 class TestBudgetRepository:
     def test_create_budget(self, db_session):
+        from app.repositories.team_repository import TeamRepository
+        from app.schemas.cost import TeamCreate
+        team_repo = TeamRepository(db_session)
+        team = team_repo.create(TeamCreate(name="Budget Team"))
         repo = BudgetRepository(db_session)
-        payload = BudgetCreate(team_id=1, month="2026-06", budget_cents=50000)
+        payload = BudgetCreate(team_id=team.id, month="2026-06", budget_cents=50000)
         budget = repo.create(payload)
-        assert budget.team_id == 1
+        assert budget.team_id == team.id
         assert budget.month == "2026-06"

@@ -38,10 +38,12 @@ def service(mock_trace_repo, mock_review_repo, mock_audit_repo):
 
 
 class TestOversightService:
+    @pytest.mark.asyncio
     async def test_get_pending_reviews_empty(self, service):
         result = await service.get_pending_reviews()
         assert result == []
 
+    @pytest.mark.asyncio
     async def test_get_pending_reviews_filters_reviewed(self, service, mock_trace_repo, mock_review_repo):
         trace = MagicMock()
         trace.request_id = "req-001-x"
@@ -61,6 +63,7 @@ class TestOversightService:
         assert len(result) == 1
         assert result[0].request_id == "req-001-x"
 
+    @pytest.mark.asyncio
     async def test_create_review_adds_audit(self, service, mock_review_repo, mock_audit_repo):
         payload = ReviewCreate(request_id="req-001-long", reviewer="alice", decision="approved", notes="looks fine")
 
@@ -115,6 +118,7 @@ class TestOversightService:
         assert result[0].decision == "rejected"
         assert result[0].reviewer == "bob"
 
+    @pytest.mark.asyncio
     async def test_get_reviewed_traces_only_shows_reviewed(self, service, mock_trace_repo, mock_review_repo):
         trace = MagicMock()
         trace.request_id = "req-002"

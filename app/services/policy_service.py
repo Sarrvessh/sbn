@@ -3,10 +3,10 @@ from __future__ import annotations
 import logging
 import re
 
-logger = logging.getLogger(__name__)
-
 from app.repositories.policy_repository import PolicyRepository
 from app.schemas.policy import PolicyResponse, PolicyTestResult
+
+logger = logging.getLogger(__name__)
 
 
 class PolicyService:

@@ -66,7 +66,14 @@ export default function Alerts() {
       if (form.enabled !== undefined) payload.enabled = form.enabled;
       updateMut.mutate({ id: editingId, payload });
     } else {
-      createMut.mutate(form as any);
+      createMut.mutate({
+        name: form.name || "",
+        alert_type: form.alert_type || "high_latency",
+        severity: form.severity || "medium",
+        threshold_value: form.threshold_value || 0,
+        enabled: form.enabled ?? true,
+        project_name: form.project_name || null,
+      });
     }
   }
 

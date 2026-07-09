@@ -1,0 +1,50 @@
+databases:
+  - name: sbn-db
+    databaseName: ai_observability
+    user: sbn
+    region: oregon
+    plan: free
+    postgresMajorVersion: 16
+
+services:
+  - type: web
+    name: sbn-api
+    runtime: image
+    plan: free
+    region: oregon
+    dockerfilePath: Dockerfile.backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sbn-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SBN_ENCRYPTION_KEY
+        sync: false
+      - key: BOOTSTRAP_ADMIN_API_KEY
+        sync: false
+      - key: BOOTSTRAP_ANALYST_API_KEY
+        sync: false
+      - key: BOOTSTRAP_VIEWER_API_KEY
+        sync: false
+      - key: BOOTSTRAP_INGEST_API_KEY
+        sync: false
+      - key: CORS_ALLOW_ORIGINS
+        value: https://your-frontend-domain.com
+      - key: LOG_LEVEL
+        value: info
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: ENFORCE_TRUSTED_HOSTS
+        value: "true"
+      - key: TRUSTED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+      - key: DB_POOL_SIZE
+        value: "5"
+      - key: DB_MAX_OVERFLOW
+        value: "10"
+      - key: PYTHON_VERSION
+        value: "3.12.9"
+    healthCheckPath: /health
+    autoDeploy: true

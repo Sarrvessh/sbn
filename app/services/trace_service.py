@@ -1,4 +1,4 @@
-from app.db.mongo_models import TraceDocument
+from app.db.models import Trace
 from app.repositories.trace_repository import TraceRepository
 from app.schemas.metrics import MetricsResponse
 from app.schemas.trace import TraceIngestRequest
@@ -13,7 +13,7 @@ class TraceService:
         self,
         payload: TraceIngestRequest,
         span_service: SpanService | None = None,
-    ) -> TraceDocument:
+    ) -> Trace:
         trace = await self._trace_repository.create(payload)
 
         if span_service is not None:

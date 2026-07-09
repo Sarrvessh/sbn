@@ -1,4 +1,4 @@
-"""Database ORM models (relational tables only — traces/spans moved to MongoDB)."""
+"""Database ORM models."""
 
 from __future__ import annotations
 
@@ -220,5 +220,58 @@ class WebhookDelivery(Base):
     status_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
     response_body: Mapped[str | None] = mapped_column(Text, nullable=True)
     delivered_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(),
+    )
+
+
+class Trace(Base):
+    __tablename__ = "traces"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    request_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    project_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    response: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
+    model_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    total_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cost: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    latency_ms: Mapped[float] = mapped_column(Float, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    flagged_for_governance: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(),
+    )
+
+
+class Span(Base):
+    __tablename__ = "spans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    span_id: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
+    parent_span_id: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    trace_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    trace_request_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    project_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    kind: Mapped[str] = mapped_column(String(30), nullable=False, default="INTERNAL")
+    span_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    input: Mapped[str | None] = mapped_column(Text, nullable=True)
+    output: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tool_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    model_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    input_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    total_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cost: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    attributes: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    retrieval_documents: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    status_code: Mapped[str] = mapped_column(String(10), nullable=False, default="UNSET")
+    status_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(),
     )

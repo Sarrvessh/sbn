@@ -1,12 +1,14 @@
-.PHONY: install dev migrate test lint typecheck docker-up docker-down clean
+.PHONY: install dev migrate migrate-new test lint typecheck security docker-up docker-down clean frontend-dev frontend-test frontend-build pre-commit
 
 install:
 	pip install -r requirements/backend.txt
 	pip install -r requirements/dashboard.txt
 	pip install -e ./sdk
+	pip install pre-commit
+	pre-commit install
 
 dev:
-	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips "*"
 
 migrate:
 	alembic upgrade head
@@ -23,11 +25,27 @@ lint:
 typecheck:
 	mypy app/ sdk/sbn_sdk/
 
+security:
+	bandit -r app/ -f json --quiet || true
+	safety check -r requirements/backend.txt --full-report || true
+
 docker-up:
 	docker compose up --build -d
 
 docker-down:
 	docker compose down
+
+frontend-dev:
+	cd frontend && npm run dev
+
+frontend-test:
+	cd frontend && npm run test
+
+frontend-build:
+	cd frontend && npm run build
+
+pre-commit:
+	pre-commit run --all-files
 
 clean:
 	rm -rf __pycache__ .pytest_cache .mypy_cache

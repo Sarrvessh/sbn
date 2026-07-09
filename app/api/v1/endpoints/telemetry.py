@@ -1,6 +1,8 @@
 """HTTP endpoints for telemetry ingest and metrics retrieval — async with MongoDB."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -21,12 +23,32 @@ from app.services.realtime_event_publisher import publish_trace_update_event
 from app.services.span_service import SpanService
 from app.services.trace_service import TraceService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="")
+
+
+async def _post_ingest_task(
+    request_id: str, prompt: str, db: Session,
+) -> None:
+    """Background task: evaluate governance and publish realtime event."""
+    trace_repo = TraceRepository()
+    try:
+        trace = await trace_repo.get_by_request_id(request_id)
+        if trace is None:
+            return
+        flagged, _ = evaluate_governance(prompt, db=db)
+        if flagged:
+            trace.flagged_for_governance = True
+            await trace.save()
+        await publish_trace_update_event(trace, trace_repo)
+    except Exception:
+        logger.exception("Post-ingest processing failed for %s", request_id)
 
 
 @router.post("/ingest", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
 async def ingest_trace(
     payload: TraceIngestRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     principal: Principal = Depends(require_roles("ingest", "analyst")),
 ) -> IngestResponse:
@@ -41,17 +63,13 @@ async def ingest_trace(
     service = TraceService(trace_repo)
     try:
         trace = await service.ingest_trace(payload, span_service=span_service)
-        flagged, reasons = evaluate_governance(payload.prompt, db=db)
-        if flagged:
-            trace.flagged_for_governance = True
-            await trace.save()
-        await publish_trace_update_event(trace, trace_repo)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to persist trace: {exc}",
         ) from exc
 
+    background_tasks.add_task(_post_ingest_task, trace.request_id, payload.prompt, db)
     return IngestResponse(request_id=payload.request_id)
 
 

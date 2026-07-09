@@ -14,7 +14,7 @@ from app.schemas.webhook import (
     WebhookTestResponse,
     WebhookUpdate,
 )
-from app.services.webhook_service import test_webhook as _test_webhook_svc
+from app.services.webhook_service import test_webhook_delivery as _test_webhook_svc
 
 router = APIRouter(prefix="")
 

@@ -1,4 +1,4 @@
-"""Database initialization for MySQL (relational) and MongoDB (traces/spans)."""
+"""Database initialization for PostgreSQL — tables, bootstrap keys, and seeds."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import time
 from sqlalchemy.exc import OperationalError
 
 from app.core.config import settings
+from app.db.models import Trace
 from app.db.session import SessionLocal, engine
 from app.repositories.api_key_repository import ApiKeyRepository
 from app.repositories.escalation_rule_repository import EscalationRuleRepository
@@ -17,12 +18,12 @@ from app.schemas.policy import PolicyCreateRequest
 
 
 def initialize_database(max_retries: int = 10, retry_delay_seconds: int = 2) -> None:
-    """Initialize MySQL tables (with retry) and seed defaults."""
-    _init_mysql(max_retries, retry_delay_seconds)
+    """Initialize PostgreSQL tables (with retry) and seed defaults."""
+    _init_postgres(max_retries, retry_delay_seconds)
 
 
-def _init_mysql(max_retries: int, retry_delay_seconds: int) -> None:
-    """Create MySQL tables if they don't exist and seed API keys."""
+def _init_postgres(max_retries: int, retry_delay_seconds: int) -> None:
+    """Create tables if they don't exist and seed API keys."""
     for attempt in range(1, max_retries + 1):
         try:
             from app.db.base import Base
@@ -36,21 +37,19 @@ def _init_mysql(max_retries: int, retry_delay_seconds: int) -> None:
             time.sleep(retry_delay_seconds)
 
 
-async def backfill_projects() -> None:
-    """Backfill MySQL projects table from MongoDB distinct project names."""
-    from app.db.mongo_models import TraceDocument
-
-    pipeline = [{"$group": {"_id": "$project_name"}}, {"$sort": {"_id": 1}}]
-    results = await TraceDocument.aggregate(pipeline).to_list()
-    names = [r["_id"] for r in results if r["_id"]]
-
-    if not names:
-        return
-
+def backfill_projects() -> None:
+    """Backfill projects table from distinct project names in traces table."""
     with SessionLocal() as db:
         repo = ProjectRepository(db)
-        for name in names:
-            repo.get_or_create_by_name(name)
+        names = (
+            db.query(Trace.project_name)
+            .distinct()
+            .order_by(Trace.project_name)
+            .all()
+        )
+        for (name,) in names:
+            if name:
+                repo.get_or_create_by_name(name)
         db.commit()
 
 

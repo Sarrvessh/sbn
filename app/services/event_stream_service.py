@@ -22,6 +22,7 @@ class EventStreamService:
     def __init__(self) -> None:
         self._subscribers: dict[str, _Subscriber] = {}
         self._lock = Lock()
+        self._event_counter = 0
 
     def subscribe(self, project_names: set[str] | None = None) -> str:
         """Register subscriber and return subscription ID."""
@@ -44,6 +45,8 @@ class EventStreamService:
         project_name = event.get("project_name")
 
         with self._lock:
+            self._event_counter += 1
+            event["event_id"] = self._event_counter
             subscribers = list(self._subscribers.items())
 
         for subscriber_id, subscriber in subscribers:

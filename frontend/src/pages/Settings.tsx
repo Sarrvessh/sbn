@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSettings, updateSettings } from "../lib/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const TABS = ["General", "Models", "Integrations", "SDK Config"];
 
 export default function Settings() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("General");
-  const [samplingRate, setSamplingRate] = useState(100);
+  const [samplingRateDraft, setSamplingRateDraft] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const { data: settings, isLoading } = useQuery({
@@ -15,9 +15,7 @@ export default function Settings() {
     queryFn: () => fetchSettings().catch(() => ({ default_agent_model: "", max_tokens: 1024, temperature: 0.2, sampling_rate: 100, budget_alert_threshold_pct: 80 })),
   });
 
-  useEffect(() => {
-    if (settings?.sampling_rate !== undefined) setSamplingRate(settings.sampling_rate);
-  }, [settings?.sampling_rate]);
+  const samplingRate = samplingRateDraft ?? settings?.sampling_rate ?? 100;
 
   const updateMut = useMutation({
     mutationFn: (d: Record<string, unknown>) => updateSettings(d),

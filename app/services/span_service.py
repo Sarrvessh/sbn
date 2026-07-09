@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from app.db.mongo_models import SpanEmbedded
+from app.db.models import Span
 from app.repositories.span_repository import SpanRepository
 from app.schemas.span import (
     SpanCreateRequest,
@@ -21,7 +21,7 @@ def generate_span_id() -> str:
     return uuid4().hex[:16]
 
 
-def _span_to_response(span: SpanEmbedded) -> SpanResponse:
+def _span_to_response(span: Span) -> SpanResponse:
     return SpanResponse(
         trace_id=span.trace_id,
         span_id=span.span_id,

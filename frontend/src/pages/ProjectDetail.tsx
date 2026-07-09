@@ -24,14 +24,18 @@ export default function ProjectDetail() {
   });
 
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (!confirm(`Delete project "${name}" and all its traces?`)) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       await deleteProject(name);
       navigate("/projects", { replace: true });
-    } catch { }
+    } catch (err) {
+      setDeleteError(String(err));
+    }
     setDeleting(false);
   };
 
@@ -49,15 +53,18 @@ export default function ProjectDetail() {
           <h1 className="page-title" style={{ fontSize: 24 }}>{project.name}</h1>
           {project.description && <p style={{ fontSize: 12, color: "#6e6e73", marginTop: 2 }}>{project.description}</p>}
         </div>
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="btn btn-danger btn-sm"
-          style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 4 }}
-        >
-          <Trash2 size={12} />
-          {deleting ? "..." : "Delete Project"}
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="btn btn-danger btn-sm"
+            style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 4 }}
+          >
+            <Trash2 size={12} />
+            {deleting ? "..." : "Delete Project"}
+          </button>
+          {deleteError && <span style={{ fontSize: 11, color: "#ff3b30" }}>{deleteError}</span>}
+        </div>
       </div>
 
       <div className="metrics" style={{ marginBottom: 24, gridTemplateColumns: "repeat(4, 1fr)" }}>

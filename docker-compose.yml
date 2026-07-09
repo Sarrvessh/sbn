@@ -1,33 +1,18 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: aiobs_mysql
+  postgres:
+    image: postgres:16
+    container_name: aiobs_postgres
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: ai_observability
-      MYSQL_USER: sbn
-      MYSQL_PASSWORD: sbn_password
+      POSTGRES_DB: ai_observability
+      POSTGRES_USER: sbn
+      POSTGRES_PASSWORD: sbn_password
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  mongo:
-    image: mongo:7
-    container_name: aiobs_mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    healthcheck:
-      test: mongosh --eval "db.runCommand('ping')" --quiet
+      test: ["CMD-SHELL", "pg_isready -U sbn -d ai_observability"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -39,13 +24,10 @@ services:
     container_name: aiobs_backend
     restart: unless-stopped
     depends_on:
-      mysql:
-        condition: service_healthy
-      mongo:
+      postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: mysql+pymysql://sbn:sbn_password@mysql:3306/ai_observability
-      MONGODB_URL: mongodb://mongo:27017/ai_observability
+      DATABASE_URL: postgresql+psycopg2://sbn:sbn_password@postgres:5432/ai_observability
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
       DEFAULT_AGENT_MODEL: ${DEFAULT_AGENT_MODEL:-gpt-4o-mini}
@@ -59,6 +41,7 @@ services:
       BOOTSTRAP_ANALYST_PROJECT_SCOPE: ${BOOTSTRAP_ANALYST_PROJECT_SCOPE:-}
       BOOTSTRAP_VIEWER_PROJECT_SCOPE: ${BOOTSTRAP_VIEWER_PROJECT_SCOPE:-}
       CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      SBN_ENCRYPTION_KEY: ${SBN_ENCRYPTION_KEY:-}
     ports:
       - "8000:8000"
 
@@ -74,5 +57,4 @@ services:
       - "80:80"
 
 volumes:
-  mysql_data:
-  mongo_data:
+  postgres_data:

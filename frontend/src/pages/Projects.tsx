@@ -13,6 +13,7 @@ export default function Projects() {
     queryFn: fetchProjects,
   });
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState("");
@@ -29,10 +30,13 @@ export default function Projects() {
   const handleDelete = async (name: string) => {
     if (!confirm(`Delete project "${name}" and all its traces?`)) return;
     setDeleting(name);
+    setDeleteError(null);
     try {
       await deleteProject(name);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-    } catch { }
+    } catch (err) {
+      setDeleteError(String(err));
+    }
     setDeleting(null);
   };
 
@@ -83,10 +87,12 @@ export default function Projects() {
             </button>
           </div>
           {createMut.isError && (
-            <p style={{ fontSize: 11, color: "#ff3b30", margin: "4px 12px 8px" }}>{(createMut.error as Error)?.message || "Failed to create"}</p>
+            <p style={{ fontSize: 11, color: "#ff3b30", margin: "4px 12px 8px" }}>{createMut.error?.message || "Failed to create"}</p>
           )}
         </div>
       )}
+
+      {deleteError && <div className="alert-banner error" style={{ marginBottom: 12 }}>{deleteError}</div>}
 
       <div className="section-card" style={{ overflow: "auto" }}>
         <table className="apple-table">

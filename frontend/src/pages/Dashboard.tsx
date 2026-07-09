@@ -1,8 +1,8 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { fetchMetrics, fetchGovernanceMetrics, fetchSystemMetrics, fetchRecentTraces, fetchAlerts, fetchProjects, runAgent } from "../lib/api";
-import { useSSE } from "../hooks/useSSE";
+import { useRealtimeEvents } from "../hooks/useWebSocket";
 import { formatCost, formatLatency, formatShortTime } from "../lib/utils";
 import MetricCard from "../components/MetricCard";
 import { Play, ChevronRight } from "lucide-react";
@@ -42,9 +42,15 @@ export default function Dashboard() {
   });
 
   const refetchRef = useRef(refetchMetrics);
-  refetchRef.current = refetchMetrics;
-  const handleMetrics = useCallback((_m: unknown) => { if (_m) refetchRef.current(); }, []);
-  useSSE({ projectName: projectParam, onMetrics: handleMetrics });
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleMetrics = useCallback((_m: unknown) => {
+    if (_m) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => refetchRef.current(), 300);
+    }
+  }, []);
+  useRealtimeEvents({ projectName: projectParam, onMetrics: handleMetrics });
+  useEffect(() => { refetchRef.current = refetchMetrics; }, [refetchMetrics]);
 
   const [showRun, setShowRun] = useState(false);
   const [runResult, setRunResult] = useState<{ response: string; latency_ms: number; total_tokens: number; cost: number; flagged_for_governance: boolean } | null>(null);
@@ -192,8 +198,8 @@ export default function Dashboard() {
         <MetricCard label="Avg Latency (50)" value={metrics ? formatLatency(metrics.average_latency_last_50_ms) : "—"} subtitle="Last 50 traces" />
         <MetricCard label="P95 Latency (50)" value={metrics ? formatLatency(metrics.p95_latency_last_50_ms) : "—"} subtitle="Last 50 traces" />
         <MetricCard label="Error Rate (50)" value={metrics && metrics.error_rate_last_50_percent != null ? `${metrics.error_rate_last_50_percent.toFixed(2)}%` : "—"} subtitle="Last 50 traces" red={metrics ? (metrics.error_rate_last_50_percent || 0) > 5 : false} />
-        <MetricCard label="Governance Flags" value={String(metrics?.governance_flagged_count ?? "—")} subtitle="Active flags" accent />
-        <MetricCard label="Traces (24h)" value={String(metrics?.traces_last_24h ?? "—")} subtitle="Last 24 hours" />
+        <MetricCard label="Governance Flags" value={metrics ? String(metrics.governance_flagged_count) : "—"} subtitle="Active flags" accent />
+        <MetricCard label="Traces (24h)" value={metrics ? String(metrics.traces_last_24h) : "—"} subtitle="Last 24 hours" />
       </div>
 
       <div className="section-card">
@@ -239,8 +245,8 @@ export default function Dashboard() {
         </div>
         <div className="section-card-body" style={{ paddingTop: 0 }}>
           <ul className="item-list">
-            {alerts?.slice(0, 5).map((a, i) => (
-              <li key={`${a.request_id}-${i}`}>
+            {alerts?.slice(0, 5).map((a) => (
+              <li key={`${a.request_id}-${a.alert_type}`}>
                 <div className="flex items-center gap-2">
                   <span className={`status-dot ${a.severity === "high" ? "red" : a.severity === "medium" ? "orange" : "blue"}`} />
                   <span className="badge" style={{ background: a.severity === "high" ? "#ffeeee" : a.severity === "medium" ? "#fff4e5" : "#e8f4fd", color: a.severity === "high" ? "#ff3b30" : a.severity === "medium" ? "#ff9500" : "#0071e3" }}>

@@ -87,8 +87,6 @@ export default function Layout() {
           <div
             className="sidebar-link"
             onClick={() => setKeyEditing(true)}
-            onMouseEnter={(e) => { if (!isActive("/")) e.currentTarget.style.background = "rgba(0,0,0,0.04)"; }}
-            onMouseLeave={(e) => { if (!isActive("/")) e.currentTarget.style.background = "transparent"; }}
             style={{ color: "#6e6e73", fontSize: 12 }}
           >
             <Key size={14} />

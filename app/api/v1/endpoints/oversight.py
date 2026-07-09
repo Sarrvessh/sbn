@@ -5,13 +5,11 @@ import io
 import json
 from typing import Literal
 
-import bson
-from bson.errors import InvalidId
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.security import Principal, require_roles
-from app.db.mongo_models import TraceDocument
+from app.db.models import Trace
 from app.db.session import get_db
 from app.repositories.audit_log_repository import AuditLogRepository
 from app.repositories.review_repository import ReviewRepository
@@ -98,20 +96,17 @@ def list_audit_log(
 
 @router.get("/export/traces/batch")
 async def export_traces_batch(
-    cursor: str | None = Query(default=None),
+    cursor: int | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=1000),
     redact: bool = Query(default=False),
     db: Session = Depends(get_db),
     _: Principal = Depends(require_roles("admin", "analyst")),
 ) -> dict:
-    query = {}
+    query = db.query(Trace)
     if cursor:
-        try:
-            query["_id"] = {"$gt": bson.ObjectId(cursor)}
-        except InvalidId:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid cursor format")
-    cursor_q = TraceDocument.find(query).sort("_id").limit(limit)
-    traces = await cursor_q.to_list()
+        query = query.where(Trace.id > cursor)
+    query = query.order_by(Trace.id).limit(limit)
+    traces = query.all()
     data = [
         {
             "request_id": t.request_id, "project_name": t.project_name,

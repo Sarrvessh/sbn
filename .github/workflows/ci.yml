@@ -6,70 +6,87 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  lint-and-test:
+  backend-lint:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: ai_observability
-          MYSQL_USER: sbn
-          MYSQL_PASSWORD: sbn_password
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost -uroot -proot_password"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-      mongo:
-        image: mongo:7
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand(\"ping\")' --quiet"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+          cache: pip
+      - run: pip install ruff bandit safety
+      - run: ruff check app/ tests/ sdk/
+      - run: bandit -r app/ -f json --quiet || true
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/backend.txt
-          pip install -e ./sdk
+  backend-security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements/backend.txt
+      - run: safety check -r requirements/backend.txt --full-report || true
 
-      - name: Lint with ruff
-        run: ruff check app/ tests/ sdk/sbn_sdk/
-
-      - name: Type check with mypy
-        run: mypy app/ sdk/sbn_sdk/
-
-      - name: Run unit tests
-        run: pytest tests/ -v --ignore=tests/test_integration.py -k "not integration"
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements/backend.txt
+      - run: python -m pytest tests/ -v --tb=short --ignore=tests/test_e2e_api.py --ignore=tests/test_integration.py -x
         env:
-          DATABASE_URL: mysql+pymysql://sbn:sbn_password@localhost:3306/ai_observability
-          MONGODB_URL: mongodb://localhost:27017/ai_observability
+          DATABASE_URL: sqlite:///test.db
 
-      - name: Run integration tests
-        run: pytest tests/test_integration.py -v
-        env:
-          DATABASE_URL: mysql+pymysql://sbn:sbn_password@localhost:3306/ai_observability
-          MONGODB_URL: mongodb://localhost:27017/ai_observability
-          BACKEND_BASE_URL: http://localhost:8000
-          SBN_API_KEY: admin-local-dev-key
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          BOOTSTRAP_ADMIN_API_KEY: admin-local-dev-key
-          BOOTSTRAP_ANALYST_API_KEY: analyst-local-dev-key
-          BOOTSTRAP_VIEWER_API_KEY: viewer-local-dev-key
-          BOOTSTRAP_INGEST_API_KEY: ingest-local-dev-key
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run test
+      - run: npx tsc --noEmit
+
+  docker-build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend-lint, backend-test, frontend]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.backend
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

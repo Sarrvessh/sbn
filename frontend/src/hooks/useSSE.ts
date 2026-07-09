@@ -8,6 +8,7 @@ interface SSEOptions {
   onMetrics?: (metrics: unknown) => void;
   onTrace?: (trace: unknown) => void;
   onAlerts?: (alerts: unknown[]) => void;
+  enabled?: boolean;
 }
 
 export function useSSE({
@@ -15,19 +16,32 @@ export function useSSE({
   onMetrics,
   onTrace,
   onAlerts,
+  enabled = true,
 }: SSEOptions) {
   const readerRef = useRef<ReadableStreamDefaultReader | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout>>();
   const abortedRef = useRef(false);
+  const lastEventIdRef = useRef<string | null>(null);
+  const connectRef = useRef<() => (() => void) | undefined>();
+
+  const onMetricsRef = useRef(onMetrics);
+  const onTraceRef = useRef(onTrace);
+  const onAlertsRef = useRef(onAlerts);
+  onMetricsRef.current = onMetrics;
+  onTraceRef.current = onTrace;
+  onAlertsRef.current = onAlerts;
 
   const connect = useCallback(() => {
+    if (!enabled) return;
     const apiKey = getApiKey();
     if (!apiKey) return;
 
-    const params = projectName
-      ? `?project_name=${encodeURIComponent(projectName)}`
-      : "";
-    const url = `${BACKEND_URL}/api/v1/events/stream${params}`;
+    const params = new URLSearchParams();
+    if (projectName) params.set("project_name", projectName);
+    if (lastEventIdRef.current) params.set("last_event_id", lastEventIdRef.current);
+    const url = `${BACKEND_URL}/api/v1/events/stream${
+      params.toString() ? "?" + params.toString() : ""
+    }`;
 
     const abortController = new AbortController();
 
@@ -42,27 +56,31 @@ export function useSSE({
         const decoder = new TextDecoder();
         let buffer = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const frames = buffer.split("\n\n");
-          buffer = frames.pop() || "";
-          for (const frame of frames) {
-            const event = parseSSEFrame(frame);
-            if (event) {
-              if (event.event_type === "trace_ingested") {
-                if (event.metrics) onMetrics?.(event.metrics);
-                if (event.trace) onTrace?.(event.trace);
-                if (event.alerts?.length) onAlerts?.(event.alerts);
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const frames = buffer.split("\n\n");
+            buffer = frames.pop() || "";
+            for (const frame of frames) {
+              const { eventId, data } = parseSSEFrame(frame);
+              if (!data) continue;
+              if (eventId) lastEventIdRef.current = eventId;
+              if (data.event_type === "trace_ingested") {
+                if (data.metrics) onMetricsRef.current?.(data.metrics);
+                if (data.trace) onTraceRef.current?.(data.trace);
+                if (data.alerts?.length) onAlertsRef.current?.(data.alerts);
               }
             }
           }
+        } catch {
+          // reader error
         }
-        scheduleReconnect(connect, abortedRef, reconnectTimer);
+        scheduleReconnect(connectRef, abortedRef, reconnectTimer);
       })
       .catch(() => {
-        scheduleReconnect(connect, abortedRef, reconnectTimer);
+        scheduleReconnect(connectRef, abortedRef, reconnectTimer);
       });
 
     return () => {
@@ -70,7 +88,9 @@ export function useSSE({
       abortController.abort();
       readerRef.current?.cancel();
     };
-  }, [projectName, onMetrics, onTrace, onAlerts]);
+  }, [projectName, enabled]);
+
+  connectRef.current = connect;
 
   useEffect(() => {
     abortedRef.current = false;
@@ -80,30 +100,34 @@ export function useSSE({
       clearTimeout(reconnectTimer.current);
     };
   }, [connect]);
+
+  return null;
 }
 
 function scheduleReconnect(
-  connect: () => (() => void) | undefined,
+  connectRef: React.MutableRefObject<(() => (() => void) | undefined) | undefined>,
   abortedRef: React.MutableRefObject<boolean>,
   reconnectTimer: React.MutableRefObject<ReturnType<typeof setTimeout> | undefined>,
 ) {
   if (abortedRef.current) return;
-  reconnectTimer.current = setTimeout(connect, 3000);
+  reconnectTimer.current = setTimeout(() => connectRef.current?.(), 3000);
 }
 
-function parseSSEFrame(frame: string) {
+function parseSSEFrame(frame: string): { eventId: string | null; data: unknown } {
   const lines = frame.split("\n");
   const dataLines: string[] = [];
+  let eventId: string | null = null;
 
   for (const line of lines) {
+    if (line.startsWith("id:")) eventId = line.slice(3).trim();
     if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
   }
 
-  if (!dataLines.length) return null;
+  if (!dataLines.length) return { eventId: null, data: null };
 
   try {
-    return JSON.parse(dataLines.join("\n"));
+    return { eventId, data: JSON.parse(dataLines.join("\n")) };
   } catch {
-    return null;
+    return { eventId: null, data: null };
   }
 }

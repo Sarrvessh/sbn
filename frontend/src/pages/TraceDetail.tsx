@@ -59,7 +59,7 @@ export default function TraceDetail() {
     started_at: s.started_at as string, ended_at: s.ended_at as string,
   }));
   const tree = buildTree(spans);
-  const retrievalDocs = (data.spans || []).flatMap((s: any) => s.retrieval_documents || []);
+  const retrievalDocs = (data.spans || []).flatMap((s) => s.retrieval_documents || []);
 
   return (
     <div className="page">

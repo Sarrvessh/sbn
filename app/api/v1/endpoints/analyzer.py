@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from time import perf_counter
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -40,9 +40,24 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="")
 
 
+async def _agent_post_ingest_task(
+    request_id: str, db: Session,
+) -> None:
+    """Background task: publish realtime event after agent execution."""
+    trace_repo = TraceRepository()
+    try:
+        trace = await trace_repo.get_by_request_id(request_id)
+        if trace is None:
+            return
+        await publish_trace_update_event(trace, trace_repo, db=db)
+    except Exception:
+        logger.exception("Post-agent event publish failed for %s", request_id)
+
+
 @router.post("/agent/run", response_model=AgentRunResponse, status_code=status.HTTP_200_OK)
 async def run_agent(
     request: AgentRunRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     principal: Principal = Depends(require_roles("analyst")),
 ) -> AgentRunResponse:
@@ -74,7 +89,7 @@ async def run_agent(
             status="success", flagged_for_governance=flagged, timestamp=timestamp,
         )
         trace = await service.ingest_trace(payload, span_service=span_service)
-        await publish_trace_update_event(trace, TraceRepository(), db=db)
+        background_tasks.add_task(_agent_post_ingest_task, trace.request_id, db)
 
         return AgentRunResponse(
             request_id=request_id, project_name=effective_project_name,
@@ -95,7 +110,7 @@ async def run_agent(
                 flagged_for_governance=flagged, timestamp=timestamp,
             )
             trace = await service.ingest_trace(payload, span_service=span_service)
-            await publish_trace_update_event(trace, TraceRepository(), db=db)
+            background_tasks.add_task(_agent_post_ingest_task, trace.request_id, db)
         except Exception as exc2:
             logger.warning("Failed to persist error trace: %s", exc2)
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=error_message) from exc
@@ -207,18 +222,13 @@ async def get_system_metrics(
     err_rate = await trace_repo.get_error_rate_last_n(200)
     avg_lat = await trace_repo.get_average_latency_last_n(200)
     traces_today = await trace_repo.get_trace_count_last_24h()
-    project_names = await trace_repo.list_project_names()
 
     from app.repositories.project_repository import ProjectRepository
     db_projects = ProjectRepository(db).list_all()
 
-    pipeline = [
-        {"$group": {"_id": "$model_name"}},
-        {"$sort": {"_id": 1}},
-    ]
-    from app.db.mongo_models import TraceDocument
-    models_raw = await TraceDocument.aggregate(pipeline).to_list()
-    unique_models = [m["_id"] for m in models_raw if m["_id"]]
+    from app.db.models import Trace
+    models_raw = db.query(Trace.model_name).distinct().order_by(Trace.model_name).all()
+    unique_models = [m[0] for m in models_raw if m[0]]
 
     uptime_hours = (datetime.now(timezone.utc) - settings.app_start_time).total_seconds() / 3600 if hasattr(settings, "app_start_time") else 0.0
 
@@ -239,6 +249,7 @@ async def get_system_metrics(
 async def stream_events(
     request: Request,
     project_name: str | None = Query(default=None, max_length=255),
+    last_event_id: str | None = Query(default=None),
     principal: Principal = Depends(require_roles("viewer", "analyst")),
 ) -> StreamingResponse:
     scoped_projects = resolve_project_scopes(principal, project_name)
@@ -279,4 +290,89 @@ async def stream_events(
 
 
 def _format_sse(payload: dict, event_name: str) -> str:
-    return f"event: {event_name}\ndata: {json.dumps(payload)}\n\n"
+    clean = {k: v for k, v in payload.items() if k != "event_id"}
+    event_id = payload.get("event_id")
+    out = f"event: {event_name}\n"
+    if event_id is not None:
+        out += f"id: {event_id}\n"
+    out += f"data: {json.dumps(clean)}\n\n"
+    return out
+
+
+@router.websocket("/events/ws")
+async def stream_events_ws(
+    websocket: WebSocket,
+    project_name: str | None = Query(default=None),
+    last_event_id: str | None = Query(default=None),
+) -> None:
+    api_key = websocket.headers.get(settings.api_key_header_name) or websocket.query_params.get("api_key")
+    if not api_key:
+        await websocket.close(code=4001)
+        return
+    from app.db.session import SessionLocal
+    from app.repositories.api_key_repository import ApiKeyRepository, hash_api_key
+
+    db = SessionLocal()
+    try:
+        repo = ApiKeyRepository(db)
+        record = repo.get_active_by_hash(hash_api_key(api_key))
+        if record is None or record.role not in ("viewer", "analyst", "admin"):
+            await websocket.close(code=4003)
+            return
+        scoped = None
+        if record.project_scope:
+            normalized = record.project_scope.replace(";", ",")
+            tokens = [s.strip() for s in normalized.split(",") if s.strip()]
+            if tokens:
+                scoped = list(dict.fromkeys(tokens))
+
+        scoped_projects: list[str] | None = None
+        if project_name and scoped:
+            if project_name not in scoped:
+                await websocket.close(code=4003)
+                return
+            scoped_projects = [project_name]
+        elif scoped:
+            scoped_projects = scoped
+        elif project_name:
+            scoped_projects = [project_name]
+
+        subscriber_id = event_stream_service.subscribe(
+            project_names=(set(scoped_projects) if scoped_projects is not None else None)
+        )
+    finally:
+        db.close()
+
+    await websocket.accept()
+    try:
+        await websocket.send_json({
+            "event_type": "connected",
+            "project_scopes": scoped_projects,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event_id": 0,
+        })
+        while True:
+            event = await asyncio.to_thread(event_stream_service.get_next_event, subscriber_id, 15.0)
+            if event is None:
+                try:
+                    await asyncio.wait_for(
+                        websocket.send_json({
+                            "event_type": "heartbeat",
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        }),
+                        timeout=5.0,
+                    )
+                except Exception:
+                    break
+                continue
+            try:
+                await asyncio.wait_for(
+                    websocket.send_json(event),
+                    timeout=5.0,
+                )
+            except Exception:
+                break
+    except WebSocketDisconnect:
+        pass
+    finally:
+        event_stream_service.unsubscribe(subscriber_id)

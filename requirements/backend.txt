@@ -1,15 +1,24 @@
+# Core
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 pydantic-settings==2.7.1
 SQLAlchemy==2.0.37
-PyMySQL==1.1.1
 openai==1.75.0
+
+# Database
+psycopg2-binary==2.9.10
 alembic>=1.13
-beanie>=1.27,<2.0
-motor>=3.6,<4.0
-pymongo>=4.10,<5.0
+
+# Rate limiting
+slowapi==0.1.9
+
+# Testing
 pytest>=8.0
 pytest-asyncio>=0.24
 pytest-cov>=5.0
 ruff>=0.7
 mypy>=1.12
+
+# Security / linting
+bandit>=1.7
+safety>=3.0

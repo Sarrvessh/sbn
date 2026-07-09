@@ -70,6 +70,8 @@ class PolicyRepository:
 
     # Exceptions
     def create_exception(self, payload: PolicyExceptionCreateRequest) -> PolicyException:
+        if self._db.get(Policy, payload.policy_id) is None:
+            raise ValueError(f"Policy with id {payload.policy_id} does not exist")
         exc = PolicyException(
             policy_id=payload.policy_id,
             pattern=payload.pattern,

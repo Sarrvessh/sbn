@@ -113,6 +113,24 @@ class TraceIngestClient:
         except Exception as exc:  # pragma: no cover
             logger.warning("Trace sender future completed with exception: %s", exc)
 
+    async def send_span_async(self, payload: SpanPayload) -> None:
+        """Asynchronously send span creation from an async event loop context."""
+        payload_dict = payload.model_dump(mode="json", exclude_none=True)
+        payload_dict["started_at"] = payload.started_at.isoformat()
+        payload_dict["ended_at"] = payload.ended_at.isoformat() if payload.ended_at else None
+        url = f"{self._spans_url}/{payload.trace_request_id}/spans"
+        async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+            for attempt in range(1, self._max_retries + 1):
+                try:
+                    response = await client.post(url, json=payload_dict, headers=self._headers)
+                    response.raise_for_status()
+                    return
+                except httpx.HTTPError as exc:
+                    if attempt == self._max_retries:
+                        logger.warning("Failed to send span asynchronously: %s", exc)
+                        return
+                    await asyncio.sleep(0.1 * attempt)
+
     def send_span_non_blocking(self, payload: SpanPayload) -> None:
         """Schedule span creation on a background worker thread."""
         payload_dict = payload.model_dump(mode="json", exclude_none=True)
@@ -123,6 +141,42 @@ class TraceIngestClient:
         with self._lock:
             self._futures.add(future)
         future.add_done_callback(self._cleanup_future)
+
+    async def send_span_finalize_async(
+        self,
+        span_id: str,
+        output: str,
+        total_tokens: int,
+        cost: float,
+        status_code: str,
+        status_message: str,
+        started_at: datetime,
+        ended_at: datetime,
+        latency_ms: float,
+    ) -> None:
+        """Asynchronously finalize a span from an async event loop context."""
+        payload_dict = {
+            "output": output,
+            "total_tokens": total_tokens,
+            "cost": cost,
+            "status_code": status_code,
+            "status_message": status_message,
+            "started_at": started_at.isoformat(),
+            "ended_at": ended_at.isoformat(),
+            "latency_ms": latency_ms,
+        }
+        url = f"{self._span_update_url}/{span_id}"
+        async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+            for attempt in range(1, self._max_retries + 1):
+                try:
+                    response = await client.patch(url, json=payload_dict, headers=self._headers)
+                    response.raise_for_status()
+                    return
+                except httpx.HTTPError as exc:
+                    if attempt == self._max_retries:
+                        logger.warning("Failed to finalize span asynchronously: %s", exc)
+                        return
+                    await asyncio.sleep(0.1 * attempt)
 
     def send_span_finalize_non_blocking(
         self,

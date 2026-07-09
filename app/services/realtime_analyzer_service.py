@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.db.models import AlertRule
 from app.repositories.trace_repository import TraceRepository
 from app.schemas.analytics import AlertResponse, RealtimeMetricsResponse, RecentTraceResponse
+from app.services.cache_service import metrics_cache
 
 
 class RealtimeAnalyzerService:
@@ -17,6 +18,11 @@ class RealtimeAnalyzerService:
     async def get_realtime_metrics(
         self, window_size: int = 50, project_names: list[str] | None = None,
     ) -> RealtimeMetricsResponse:
+        cache_key = f"metrics:{window_size}:{sorted(project_names) if project_names else 'all'}"
+        cached = metrics_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         latencies = await self._trace_repository.get_recent_latencies(window_size, project_names=project_names)
         p95_latency = 0.0
         if latencies:
@@ -33,7 +39,7 @@ class RealtimeAnalyzerService:
             window_size, project_names=project_names,
         )
         traces_24h = await self._trace_repository.get_trace_count_last_24h(project_names=project_names)
-        return RealtimeMetricsResponse(
+        result = RealtimeMetricsResponse(
             total_cost=total_cost,
             average_latency_last_50_ms=avg_latency,
             p95_latency_last_50_ms=p95_latency,
@@ -41,6 +47,8 @@ class RealtimeAnalyzerService:
             error_rate_last_50_percent=err_rate,
             traces_last_24h=traces_24h,
         )
+        metrics_cache.set(cache_key, result, ttl_seconds=30)
+        return result
 
     async def get_recent_traces(
         self, limit: int = 100, project_names: list[str] | None = None,
@@ -69,7 +77,13 @@ class RealtimeAnalyzerService:
         project_names: list[str] | None = None,
         db: Session | None = None,
     ) -> list[AlertResponse]:
-        traces = await self._trace_repository.list_recent(limit, project_names=project_names)
+        traces_key = f"traces:{limit}:{sorted(project_names) if project_names else 'all'}"
+        cached_traces = metrics_cache.get(traces_key)
+        if cached_traces is not None:
+            traces = cached_traces
+        else:
+            traces = await self._trace_repository.list_recent(limit, project_names=project_names)
+            metrics_cache.set(traces_key, traces, ttl_seconds=30)
         alerts: list[AlertResponse] = []
 
         rule_repo: "AlertRuleRepository | None" = None

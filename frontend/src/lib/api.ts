@@ -590,17 +590,17 @@ export interface CostAnalytics {
 
 export async function fetchCostAnalytics(project?: string): Promise<CostAnalytics> {
   const params = project ? `?project_name=${encodeURIComponent(project)}` : "";
-  const raw: any = await request(`/api/v1/analytics/costs${params}`);
+  const raw = await request<Record<string, unknown>>(`/api/v1/analytics/costs${params}`);
   return {
-    total_cost: raw.total_cost,
-    total_tokens: raw.total_tokens,
-    total_traces: raw.total_traces,
-    cost_this_month: raw.cost_this_month,
-    traces_this_month: raw.traces_this_month,
-    daily_costs: raw.daily_costs || [],
-    by_model: raw.by_model || [],
-    by_project: raw.by_project || [],
-    teams: (raw.by_team || []).map((t: any) => ({
+    total_cost: raw.total_cost as number,
+    total_tokens: raw.total_tokens as number,
+    total_traces: raw.total_traces as number,
+    cost_this_month: raw.cost_this_month as number,
+    traces_this_month: raw.traces_this_month as number,
+    daily_costs: (raw.daily_costs || []) as { date: string; cost: number; trace_count: number }[],
+    by_model: (raw.by_model || []) as { model_name: string; total_cost: number; total_tokens: number; trace_count: number }[],
+    by_project: (raw.by_project || []) as { project_name: string; total_cost: number; total_tokens: number; trace_count: number }[],
+    teams: ((raw.by_team || []) as { team_name: string; total_cost: number; total_tokens: number; trace_count: number; budget_cents?: number }[]).map((t) => ({
       name: t.team_name,
       total_cost: t.total_cost,
       total_tokens: t.total_tokens,

@@ -49,6 +49,8 @@ class TeamRepository:
         return True
 
     def assign_project(self, team_id: int, project_name: str) -> TeamProjectAssignment:
+        if self._db.get(Team, team_id) is None:
+            raise ValueError(f"Team with id {team_id} does not exist")
         assignment = TeamProjectAssignment(team_id=team_id, project_name=project_name)
         self._db.add(assignment)
         self._db.commit()

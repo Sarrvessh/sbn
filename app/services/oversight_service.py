@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.db.mongo_models import TraceDocument
+from app.db.models import Trace
 from app.repositories.audit_log_repository import AuditLogRepository
 from app.repositories.review_repository import ReviewRepository
 from app.repositories.trace_repository import TraceRepository
@@ -84,7 +84,7 @@ class OversightService:
     ):
         return self._audit_repo.list_all(limit, offset, actor, action, resource_type)
 
-    def _to_pending_item(self, trace: TraceDocument, latest_review) -> PendingReviewItem:
+    def _to_pending_item(self, trace: Trace, latest_review) -> PendingReviewItem:
         return PendingReviewItem(
             request_id=trace.request_id,
             project_name=trace.project_name,

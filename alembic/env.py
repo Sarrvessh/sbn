@@ -6,7 +6,7 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.base import Base
-import app.db.models  # noqa: F401
+import app.db.models  # noqa: F401 covers all models including Trace, Span
 
 config = context.config
 

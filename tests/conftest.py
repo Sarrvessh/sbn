@@ -1,3 +1,5 @@
+"""Test fixtures — uses SQLite in-memory for all database operations."""
+
 from __future__ import annotations
 
 from collections.abc import Generator
@@ -5,47 +7,38 @@ from datetime import datetime, timezone
 
 import pytest
 import pytest_asyncio
-from beanie import init_beanie
-from motor.motor_asyncio import AsyncIOMotorClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.config import get_settings
 from app.db.base import Base
-from app.db.mongo_models import TraceDocument
 from app.repositories.trace_repository import TraceRepository
 from app.schemas.trace import TraceIngestRequest
 
-TEST_MONGODB_URL = "mongodb://localhost:27017/ai_observability_test"
+# Override settings for tests
+from app import db  # noqa: F401
 
 
-@pytest_asyncio.fixture(scope="function")
-async def mongo_db():
-    client = AsyncIOMotorClient(TEST_MONGODB_URL)
-    await init_beanie(
-        database=client.get_default_database(),
-        document_models=[TraceDocument],
-    )
-    yield
-    await client.drop_database("ai_observability_test")
-    client.close()
+@pytest.fixture(scope="session")
+def engine():
+    eng = create_engine("sqlite:///:memory:", echo=False)
+    Base.metadata.create_all(bind=eng)
+    return eng
 
 
 @pytest.fixture
-def db_session() -> Generator[Session, None, None]:
-    engine = create_engine("sqlite:///:memory:", echo=False)
-    Base.metadata.create_all(bind=engine)
+def db_session(engine) -> Generator[Session, None, None]:
     TestSession = sessionmaker(bind=engine)
     session = TestSession()
     try:
         yield session
     finally:
         session.close()
-        Base.metadata.drop_all(bind=engine)
 
 
 @pytest_asyncio.fixture
-async def trace_repository(mongo_db) -> TraceRepository:
-    return TraceRepository()
+async def trace_repository(db_session: Session) -> TraceRepository:
+    return TraceRepository(db=db_session)
 
 
 @pytest.fixture
@@ -66,7 +59,8 @@ def sample_trace_payload() -> TraceIngestRequest:
 
 
 @pytest_asyncio.fixture
-async def seeded_traces(trace_repository: TraceRepository) -> list[TraceDocument]:
+async def seeded_traces(trace_repository: TraceRepository) -> list[Trace]:
+    from app.db.models import Trace
     traces_data = [
         TraceIngestRequest(
             request_id=f"seed-req-{i:03d}",

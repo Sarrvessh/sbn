@@ -80,7 +80,6 @@ class TestIntegrationSpan:
         assert args["status_message"] == "something went wrong"
 
 
-@pytest.mark.skip(reason="requires langchain-core")
 class TestLangChainIntegration:
     def test_handler_creation(self, tracer):
         from sbn_sdk.integrations.langchain import SbnLangChainHandler, instrument
@@ -95,7 +94,6 @@ class TestLangChainIntegration:
             mock_create.assert_called_once()
 
 
-@pytest.mark.skip(reason="requires langgraph")
 class TestLangGraphIntegration:
     def test_instrument_graph(self, tracer):
         from sbn_sdk.integrations.langgraph import instrument
@@ -115,7 +113,7 @@ class TestOpenAIAgentsIntegration:
             assert MockRunner.run != MockRunner.run
 
 
-@pytest.mark.skip(reason="requires autogen")
+@pytest.mark.skip(reason="requires pyautogen")
 class TestAutoGenIntegration:
     def test_instrument_patches_send(self, tracer):
         from sbn_sdk.integrations.autogen import instrument

@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models import Budget
+from app.db.models import Budget, Team
 from app.schemas.cost import BudgetCreate, BudgetUpdate
 
 
@@ -26,6 +26,8 @@ class BudgetRepository:
         return self._db.scalar(stmt)
 
     def create(self, payload: BudgetCreate) -> Budget:
+        if self._db.get(Team, payload.team_id) is None:
+            raise ValueError(f"Team with id {payload.team_id} does not exist")
         budget = Budget(
             team_id=payload.team_id,
             month=payload.month,

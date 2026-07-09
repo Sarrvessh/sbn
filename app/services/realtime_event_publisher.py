@@ -5,13 +5,13 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.mongo_models import TraceDocument
+from app.db.models import Trace
 from app.repositories.trace_repository import TraceRepository
 from app.services.event_stream_service import event_stream_service
 from app.services.realtime_analyzer_service import RealtimeAnalyzerService
 
 
-async def publish_trace_update_event(trace: TraceDocument, repository: TraceRepository, db: Session | None = None) -> None:
+async def publish_trace_update_event(trace: Trace, repository: TraceRepository, db: Session | None = None) -> None:
     analyzer = RealtimeAnalyzerService(repository)
     project_name = trace.project_name
 

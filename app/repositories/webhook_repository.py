@@ -13,7 +13,7 @@ from app.schemas.webhook import WebhookCreate, WebhookUpdate
 
 
 def _get_fernet() -> Fernet:
-    key_material = settings.app_name + settings.database_url
+    key_material = settings.encryption_key or (settings.app_name + settings.database_url)
     key = b64encode(key_material.encode("utf-8").ljust(32, b"x")[:32])
     return Fernet(key)
 
