@@ -58,7 +58,7 @@ export default function Projects() {
           </div>
           <div className="section-card-body" style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Project Name</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Project Name</label>
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -68,7 +68,7 @@ export default function Projects() {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Description (optional)</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Description (optional)</label>
               <input
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
@@ -87,7 +87,7 @@ export default function Projects() {
             </button>
           </div>
           {createMut.isError && (
-            <p style={{ fontSize: 11, color: "#ff3b30", margin: "4px 12px 8px" }}>{createMut.error?.message || "Failed to create"}</p>
+            <p style={{ fontSize: 11, color: "#ff3849", margin: "4px 12px 8px" }}>{createMut.error?.message || "Failed to create"}</p>
           )}
         </div>
       )}
@@ -109,18 +109,18 @@ export default function Projects() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={7} style={{ textAlign: "center", color: "#aeaeb2", padding: 32 }}>Loading…</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--label-3)", padding: 32 }}>Loading…</td></tr>
             ) : (projects || []).length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: "center", color: "#aeaeb2", padding: 32 }}>No projects yet.</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--label-3)", padding: 32 }}>No projects yet.</td></tr>
             ) : (
               (projects || []).map((p) => (
                 <tr key={p.name} onClick={() => navigate(`/projects/${encodeURIComponent(p.name)}`)} style={{ cursor: "pointer" }}>
                   <td style={{ fontWeight: 500 }}>{p.name}</td>
-                  <td style={{ color: "#6e6e73", fontSize: 12, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{p.description || "—"}</td>
-                  <td style={{ color: "#aeaeb2", fontSize: 12 }}>{formatTime(p.created_at)}</td>
-                  <td style={{ color: "#6e6e73", fontSize: 12 }}>{(p.models_used || []).join(", ") || "—"}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{p.total_tokens}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{p.total_traces}</td>
+                  <td style={{ color: "var(--label-2)", fontSize: 12, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{p.description || "—"}</td>
+                  <td style={{ color: "var(--label-3)", fontSize: 12 }}>{formatTime(p.created_at)}</td>
+                  <td style={{ color: "var(--label-2)", fontSize: 12 }}>{(p.models_used || []).join(", ") || "—"}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{p.total_tokens}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{p.total_traces}</td>
                   <td style={{ textAlign: "right" }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDelete(p.name); }}

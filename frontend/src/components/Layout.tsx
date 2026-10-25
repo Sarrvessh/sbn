@@ -1,23 +1,50 @@
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Route, Bell, DollarSign, Eye, Shield, Settings, LogOut, Menu, X, Key, FolderKanban, Users, Webhook, GitCompare
+  LayoutDashboard, Route, Bell, DollarSign, Eye, Shield, Settings, LogOut,
+  Menu, X, Key, FolderKanban, Users, Webhook, GitCompare, Radar, CheckCircle2,
 } from "lucide-react";
 
-const navItems = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/traces", icon: Route, label: "Traces & Runs" },
-  { to: "/projects", icon: FolderKanban, label: "Projects" },
-  { to: "/alerts", icon: Bell, label: "Alerts" },
-  { to: "/compare", icon: GitCompare, label: "Compare" },
-  { to: "/costs", icon: DollarSign, label: "Costs" },
-  { to: "/api-keys", icon: Key, label: "API Keys" },
-  { to: "/webhooks", icon: Webhook, label: "Webhooks" },
-  { to: "/oversight", icon: Eye, label: "Oversight" },
-  { to: "/teams", icon: Users, label: "Teams" },
-  { to: "/governance", icon: Shield, label: "Governance" },
-  { to: "/settings", icon: Settings, label: "Settings" },
+const navSections = [
+  {
+    title: "Observe",
+    items: [
+      { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/traces", icon: Route, label: "Traces & Runs" },
+      { to: "/projects", icon: FolderKanban, label: "Projects" },
+      { to: "/compare", icon: GitCompare, label: "Compare" },
+      { to: "/costs", icon: DollarSign, label: "Costs" },
+      { to: "/alerts", icon: Bell, label: "Alerts" },
+    ],
+  },
+  {
+    title: "Govern",
+    items: [
+      { to: "/oversight", icon: Eye, label: "Oversight" },
+      { to: "/governance", icon: Shield, label: "Governance" },
+    ],
+  },
+  {
+    title: "Workspace",
+    items: [
+      { to: "/teams", icon: Users, label: "Teams" },
+      { to: "/api-keys", icon: Key, label: "API Keys" },
+      { to: "/webhooks", icon: Webhook, label: "Webhooks" },
+      { to: "/settings", icon: Settings, label: "Settings" },
+    ],
+  },
 ];
+
+function Brand() {
+  return (
+    <div className="sidebar-brand">
+      <span className="brand-mark"><Radar size={16} strokeWidth={2.2} /></span>
+      <span>
+        SBN <span className="brand-sub">· ARMS</span>
+      </span>
+    </div>
+  );
+}
 
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,7 +54,7 @@ export default function Layout() {
     location.pathname === path || location.pathname.startsWith(path + "/");
 
   const [apiKey, setApiKey] = useState(() => localStorage.getItem("sbn_api_key") || "");
-  const [keyEditing, setKeyEditing] = useState(!apiKey);
+  const [keyEditing, setKeyEditing] = useState(false);
 
   const handleKeySave = () => {
     const trimmed = apiKey.trim();
@@ -41,106 +68,98 @@ export default function Layout() {
     window.location.reload();
   };
 
-  const sidebarLinkStyle = (path: string): React.CSSProperties => ({
-    display: "flex", alignItems: "center", gap: 10, padding: "6px 12px", borderRadius: 6,
-    fontSize: 13, fontWeight: 500, textDecoration: "none", cursor: "pointer",
-    color: isActive(path) ? "#ffffff" : "#6e6e73",
-    background: isActive(path) ? "#0071e3" : "transparent",
-    transition: "all 0.12s ease",
-  });
-
-  const sidebarContent = (
+  const navContent = (
     <>
-      <div className="sidebar-brand">SBN <span style={{ fontWeight: 400, color: "#aeaeb2" }}>- ARMS</span></div>
-
-      <div className="sidebar-section"></div>
-      <div className="sidebar-nav">
-        {navItems.map((item) => (
-          <NavLink key={item.to} to={item.to} style={sidebarLinkStyle(item.to)}>
-            <item.icon size={16} />
-            {item.label}
-          </NavLink>
-        ))}
-      </div>
-
-      <div className="sidebar-footer">
-        <div className="sidebar-section" style={{ marginTop: 0 }}>Account</div>
-        {keyEditing ? (
-          <div style={{ padding: "6px 12px" }}>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-..."
-              className="input"
-              style={{ fontSize: 11, padding: "5px 8px", marginBottom: 4 }}
-              autoFocus
-            />
-            <div className="flex gap-1">
-              <button onClick={handleKeySave} className="btn btn-primary btn-sm">Save</button>
-              {localStorage.getItem("sbn_api_key") && (
-                <button onClick={disconnect} className="btn btn-secondary btn-sm">Disconnect</button>
-              )}
-            </div>
+      <Brand />
+      {navSections.map((section) => (
+        <div key={section.title}>
+          <div className="sidebar-section">{section.title}</div>
+          <div className="sidebar-nav">
+            {section.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={`sidebar-link ${isActive(item.to) ? "active" : ""}`}
+                onClick={() => setMobileOpen(false)}
+              >
+                <item.icon size={17} strokeWidth={1.8} />
+                {item.label}
+              </NavLink>
+            ))}
           </div>
-        ) : (
-          <div
-            className="sidebar-link"
-            onClick={() => setKeyEditing(true)}
-            style={{ color: "#6e6e73", fontSize: 12 }}
-          >
-            <Key size={14} />
-            {apiKey ? "API Key Set" : "Set API Key"}
-          </div>
-        )}
-        <div className="sidebar-link" onClick={disconnect} style={{ color: "#6e6e73", fontSize: 12, marginTop: 0 }}>
-          <LogOut size={14} />
-          Disconnect
         </div>
-      </div>
+      ))}
     </>
+  );
+
+  const accountFooter = (
+    <div className="sidebar-footer">
+      {keyEditing ? (
+        <div style={{ padding: "4px 10px" }}>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="sk-..."
+            className="input"
+            style={{ fontSize: 12, minHeight: 30, padding: "5px 10px", marginBottom: 6 }}
+            autoFocus
+            onKeyDown={(e) => { if (e.key === "Enter") handleKeySave(); }}
+          />
+          <div className="flex gap-1">
+            <button onClick={handleKeySave} className="btn btn-primary btn-sm">Save</button>
+            <button onClick={() => setKeyEditing(false)} className="btn btn-secondary btn-sm">Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <div className="sidebar-link" onClick={() => setKeyEditing(true)}>
+          <CheckCircle2 size={16} strokeWidth={1.8} style={{ color: "var(--green)" }} />
+          <span className="flex-1">API key connected</span>
+        </div>
+      )}
+      <div className="sidebar-link" onClick={disconnect}>
+        <LogOut size={16} strokeWidth={1.8} />
+        Disconnect
+      </div>
+    </div>
   );
 
   return (
     <div className="flex" style={{ height: "100vh", overflow: "hidden" }}>
-      {/* Desktop sidebar */}
-      <nav className="sidebar">{sidebarContent}</nav>
+      {/* Desktop sidebar — frosted glass */}
+      <nav className="sidebar">
+        {navContent}
+        {accountFooter}
+      </nav>
 
-      {/* Mobile header */}
-      <header
-        className="flex items-center justify-between"
-        style={{ display: "none", padding: "12px 16px", background: "#ffffff", borderBottom: "1px solid #d2d2d7" }}
-      >
-        <button onClick={() => setMobileOpen(!mobileOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: "#1d1d1f" }}>
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+      {/* Mobile header — frosted glass */}
+      <header className="mobile-header">
+        <button className="icon-btn" onClick={() => setMobileOpen(true)} aria-label="Open navigation">
+          <Menu size={20} strokeWidth={1.8} />
         </button>
-        <span style={{ fontWeight: 700, fontSize: 15 }}>SBN - ARMS</span>
-        <div style={{ width: 20 }} />
+        <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: "-0.02em" }}>SBN · ARMS</span>
+        <div style={{ width: 32 }} />
       </header>
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="flex" style={{ position: "fixed", inset: 0, zIndex: 50 }} onClick={() => setMobileOpen(false)}>
-          <div style={{ width: 240, background: "#ffffff", borderRight: "1px solid #d2d2d7", padding: "12px 8px" }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#1d1d1f", padding: "8px 12px", marginBottom: 8 }}>SBN — ARMS</div>
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to} to={item.to} onClick={() => setMobileOpen(false)}
-                style={{
-                  ...sidebarLinkStyle(item.to),
-                  borderRadius: 6, padding: "8px 12px",
-                }}
-              >
-                <item.icon size={16} /> {item.label}
-              </NavLink>
-            ))}
+        <>
+          <div className="drawer-backdrop" onClick={() => setMobileOpen(false)} />
+          <div className="mobile-drawer">
+            <div className="flex items-center justify-between" style={{ paddingRight: 4 }}>
+              <Brand />
+              <button className="icon-btn" onClick={() => setMobileOpen(false)} aria-label="Close navigation">
+                <X size={18} strokeWidth={1.8} />
+              </button>
+            </div>
+            {navContent}
+            {accountFooter}
           </div>
-          <div style={{ flex: 1 }} />
-        </div>
+        </>
       )}
 
       {/* Content */}
-      <main style={{ flex: 1, height: "100vh", overflowY: "auto", background: "#f5f5f7" }}>
+      <main className="app-content">
         <Outlet />
       </main>
     </div>

@@ -65,7 +65,7 @@ export default function ApiKeys() {
               <div className="flex flex-col gap-3">
                 <div className="flex gap-3">
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Role</label>
+                    <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Role</label>
                     <select value={newRole} onChange={(e) => setNewRole(e.target.value)} className="input" style={{ width: "100%" }}>
                       <option value="admin">admin</option>
                       <option value="analyst">analyst</option>
@@ -74,7 +74,7 @@ export default function ApiKeys() {
                     </select>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Project Scope (optional)</label>
+                    <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Project Scope (optional)</label>
                     <select value={newScope} onChange={(e) => setNewScope(e.target.value)} className="input" style={{ width: "100%" }}>
                       <option value="">All Projects</option>
                       {projects?.map((p) => <option key={p.name} value={p.name}>{p.name}</option>)}
@@ -82,13 +82,13 @@ export default function ApiKeys() {
                   </div>
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Description</label>
+                  <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Description</label>
                   <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} className="input" placeholder="CI/CD pipeline key" style={{ width: "100%" }} />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => createMut.mutate()} disabled={createMut.isPending} className="btn btn-primary btn-sm">{createMut.isPending ? "Creating…" : "Create Key"}</button>
                 </div>
-                {createMut.isError && <p style={{ fontSize: 11, color: "#ff3b30" }}>{createMut.error?.message}</p>}
+                {createMut.isError && <p style={{ fontSize: 11, color: "#ff3849" }}>{createMut.error?.message}</p>}
               </div>
             )}
           </div>
@@ -109,16 +109,16 @@ export default function ApiKeys() {
           </thead>
           <tbody>
             {!keys || keys.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: "center", color: "#aeaeb2", padding: 32 }}>No API keys created yet.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--label-3)", padding: 32 }}>No API keys created yet.</td></tr>
             ) : (
               keys.map((k) => (
                 <tr key={k.key_prefix}>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>{k.key_prefix}...</td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{k.key_prefix}...</td>
                   <td><span className="badge blue">{k.role}</span></td>
-                  <td style={{ color: "#6e6e73", fontSize: 12 }}>{k.project_scope || "—"}</td>
-                  <td style={{ color: "#6e6e73", fontSize: 12 }}>{k.description || "—"}</td>
+                  <td style={{ color: "var(--label-2)", fontSize: 12 }}>{k.project_scope || "—"}</td>
+                  <td style={{ color: "var(--label-2)", fontSize: 12 }}>{k.description || "—"}</td>
                   <td><span className={`status-label ${k.is_active ? "green" : "gray"}`} style={{ fontSize: 11 }}><span className={`status-dot ${k.is_active ? "green" : "gray"}`} />{k.is_active ? "active" : "inactive"}</span></td>
-                  <td style={{ color: "#aeaeb2", fontSize: 12 }}>{formatTime(k.created_at)}</td>
+                  <td style={{ color: "var(--label-3)", fontSize: 12 }}>{formatTime(k.created_at)}</td>
                 </tr>
               ))
             )}

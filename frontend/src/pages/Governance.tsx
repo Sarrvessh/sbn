@@ -64,7 +64,7 @@ export default function Governance() {
     } catch (err) { setTestResult({ decision: "error", matched_policies: [{ policy_name: String(err) }] }); }
   };
 
-  if (isLoading) return <div className="page"><div style={{ fontSize: 13, color: "#6e6e73" }}>Loading…</div></div>;
+  if (isLoading) return <div className="page"><div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading…</div></div>;
 
   return (
     <div className="page">
@@ -147,7 +147,7 @@ export default function Governance() {
           </thead>
           <tbody>
             {(!policies || policies.length === 0) ? (
-              <tr><td colSpan={8} style={{ textAlign: "center", color: "#aeaeb2", padding: 24 }}>No policies defined.</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: "center", color: "var(--label-3)", padding: 24 }}>No policies defined.</td></tr>
             ) : (
               policies.map((p: Policy) => {
                 const isEditing = editingId === p.id;
@@ -173,7 +173,7 @@ export default function Governance() {
                           <span className={`badge ${p.action === "block" ? "red" : p.action === "flag" ? "orange" : "blue"}`} style={{ fontSize: 10 }}>{p.action}</span>
                         )}
                       </td>
-                      <td style={{ color: "#6e6e73", fontSize: 12 }}>{p.policy_type}</td>
+                      <td style={{ color: "var(--label-2)", fontSize: 12 }}>{p.policy_type}</td>
                       <td>
                         {isEditing ? (
                           <select value={editData.severity} onChange={(e) => setEditData({ ...editData, severity: e.target.value })} className="input" style={{ fontSize: 11, padding: "2px 6px", width: "auto" }}>
@@ -182,14 +182,14 @@ export default function Governance() {
                             <option value="high">high</option>
                           </select>
                         ) : (
-                          <span className="badge" style={{ background: p.severity === "high" ? "#ffeeee" : p.severity === "medium" ? "#fff4e5" : "#e8f4fd", color: p.severity === "high" ? "#ff3b30" : p.severity === "medium" ? "#ff9500" : "#0071e3" }}>{p.severity}</span>
+                          <span className="badge" style={{ background: p.severity === "high" ? "rgba(255,56,73,0.1)" : p.severity === "medium" ? "rgba(255,149,0,0.1)" : "rgba(23,131,255,0.1)", color: p.severity === "high" ? "#ff3849" : p.severity === "medium" ? "#ff9500" : "#1783ff" }}>{p.severity}</span>
                         )}
                       </td>
                       <td>
                         {isEditing ? (
-                          <input value={editData.rule_config} onChange={(e) => setEditData({ ...editData, rule_config: e.target.value })} className="input" style={{ fontSize: 11, padding: "2px 6px", width: 160, fontFamily: "'JetBrains Mono', monospace" }} />
+                          <input value={editData.rule_config} onChange={(e) => setEditData({ ...editData, rule_config: e.target.value })} className="input" style={{ fontSize: 11, padding: "2px 6px", width: 160, fontFamily: "var(--font-mono)" }} />
                         ) : (
-                          <span className="truncate" style={{ color: "#aeaeb2", maxWidth: 120, fontFamily: "'JetBrains Mono', monospace", fontSize: 11, display: "inline-block" }}>
+                          <span className="truncate" style={{ color: "var(--label-3)", maxWidth: 120, fontFamily: "var(--font-mono)", fontSize: 11, display: "inline-block" }}>
                             {(p.rule_config?.pattern as string) || JSON.stringify(p.rule_config)}
                           </span>
                         )}
@@ -206,7 +206,7 @@ export default function Governance() {
                           </span>
                         )}
                       </td>
-                      <td style={{ color: "#aeaeb2", fontSize: 11 }}>{formatTime(p.updated_at)}</td>
+                      <td style={{ color: "var(--label-3)", fontSize: 11 }}>{formatTime(p.updated_at)}</td>
                       <td style={{ textAlign: "center" }}>
                         <div className="flex items-center gap-1" style={{ justifyContent: "center" }}>
                           {isEditing ? (
@@ -232,7 +232,7 @@ export default function Governance() {
                     </tr>
                     {excOpen && (
                       <tr key={`exc-${p.id}`}>
-                        <td colSpan={8} style={{ padding: "8px 16px", background: "#fafafa" }}>
+                        <td colSpan={8} style={{ padding: "8px 16px", background: "var(--fill-1)" }}>
                           <ExceptionsPanel policyId={p.id} />
                         </td>
                       </tr>
@@ -257,9 +257,9 @@ export default function Governance() {
             <button onClick={handleTest} className="btn btn-primary btn-sm">Test</button>
           </div>
           {testResult && (
-            <div style={{ fontSize: 12, color: testResult.decision === "block" ? "#ff3b30" : testResult.decision === "flag" ? "#ff9500" : "#34c759" }}>
+            <div style={{ fontSize: 12, color: testResult.decision === "block" ? "#ff3849" : testResult.decision === "flag" ? "#ff9500" : "#16c456" }}>
               Decision: {testResult.decision}
-              {testResult.matched_policies.length > 0 && <div style={{ color: "#6e6e73", marginTop: 4 }}>Matched: {testResult.matched_policies.map((p) => p.policy_name).join(", ")}</div>}
+              {testResult.matched_policies.length > 0 && <div style={{ color: "var(--label-2)", marginTop: 4 }}>Matched: {testResult.matched_policies.map((p) => p.policy_name).join(", ")}</div>}
             </div>
           )}
         </div>
@@ -290,13 +290,13 @@ function ExceptionsPanel({ policyId }: { policyId: number }) {
 
   return (
     <div>
-      <div style={{ fontSize: 11, color: "#6e6e73", marginBottom: 6, fontWeight: 600 }}>Exceptions (allowlisted patterns)</div>
-      {(!exceptions || exceptions.length === 0) && <div style={{ fontSize: 11, color: "#aeaeb2", marginBottom: 6 }}>No exceptions defined.</div>}
+      <div style={{ fontSize: 11, color: "var(--label-2)", marginBottom: 6, fontWeight: 600 }}>Exceptions (allowlisted patterns)</div>
+      {(!exceptions || exceptions.length === 0) && <div style={{ fontSize: 11, color: "var(--label-3)", marginBottom: 6 }}>No exceptions defined.</div>}
       {exceptions?.map((exc) => (
-        <div key={exc.id} className="flex items-center justify-between" style={{ padding: "4px 0", borderBottom: "1px solid #f0f0f0" }}>
+        <div key={exc.id} className="flex items-center justify-between" style={{ padding: "4px 0", borderBottom: "1px solid var(--separator-soft)" }}>
           <div className="flex items-center gap-2">
-            <code style={{ fontSize: 11, color: "#6e6e73" }}>{exc.pattern}</code>
-            {exc.reason && <span style={{ fontSize: 10, color: "#aeaeb2" }}>— {exc.reason}</span>}
+            <code style={{ fontSize: 11, color: "var(--label-2)" }}>{exc.pattern}</code>
+            {exc.reason && <span style={{ fontSize: 10, color: "var(--label-3)" }}>— {exc.reason}</span>}
           </div>
           <button onClick={() => deleteMut.mutate(exc.id)} className="btn btn-danger btn-sm" style={{ padding: "1px 6px", fontSize: 10 }}><Trash2 size={10} /></button>
         </div>

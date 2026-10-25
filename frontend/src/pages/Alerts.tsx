@@ -99,7 +99,7 @@ export default function Alerts() {
       {tab === "feed" && (
         <>
           {isLoading ? (
-            <div style={{ fontSize: 13, color: "#6e6e73" }}>Loading…</div>
+            <div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading…</div>
           ) : (
             <div className="section-card">
               <ul className="item-list">
@@ -107,19 +107,19 @@ export default function Alerts() {
                   <li key={`${a.request_id}-${a.alert_type}`} style={{ cursor: "default" }}>
                     <div className="flex items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
                       <span className={`status-dot ${a.severity === "high" ? "red" : a.severity === "medium" ? "orange" : "blue"}`} />
-                      <span className="badge" style={{ background: a.severity === "high" ? "#ffeeee" : a.severity === "medium" ? "#fff4e5" : "#e8f4fd", color: a.severity === "high" ? "#ff3b30" : a.severity === "medium" ? "#ff9500" : "#0071e3" }}>
+                      <span className="badge" style={{ background: a.severity === "high" ? "rgba(255,56,73,0.1)" : a.severity === "medium" ? "rgba(255,149,0,0.1)" : "rgba(23,131,255,0.1)", color: a.severity === "high" ? "#ff3849" : a.severity === "medium" ? "#ff9500" : "#1783ff" }}>
                         {a.severity}
                       </span>
-                      <span style={{ fontWeight: 500, color: "#1d1d1f" }}>{a.alert_type}</span>
-                      <span className="truncate" style={{ color: "#6e6e73", flex: 1 }}>{a.message}</span>
+                      <span style={{ fontWeight: 500, color: "var(--label-1)" }}>{a.alert_type}</span>
+                      <span className="truncate" style={{ color: "var(--label-2)", flex: 1 }}>{a.message}</span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#aeaeb2" }}>{formatTime(a.timestamp)}</span>
-                      {a.request_id && <span className="truncate" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#aeaeb2", maxWidth: 140 }}>{a.request_id}</span>}
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--label-3)" }}>{formatTime(a.timestamp)}</span>
+                      {a.request_id && <span className="truncate" style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--label-3)", maxWidth: 140 }}>{a.request_id}</span>}
                     </div>
                   </li>
                 ))}
-                {sorted.length === 0 && <li style={{ cursor: "default", color: "#aeaeb2" }}>No alerts to display.</li>}
+                {sorted.length === 0 && <li style={{ cursor: "default", color: "var(--label-3)" }}>No alerts to display.</li>}
               </ul>
             </div>
           )}
@@ -171,21 +171,21 @@ export default function Alerts() {
               {(rules || []).map((r) => (
                 <tr key={r.id}>
                   <td>{r.name}</td>
-                  <td>{r.project_name || <span style={{ color: "#aeaeb2" }}>Global</span>}</td>
+                  <td>{r.project_name || <span style={{ color: "var(--label-3)" }}>Global</span>}</td>
                   <td><span className="badge">{r.alert_type}</span></td>
-                  <td><span className="badge" style={{ background: r.severity === "high" ? "#ffeeee" : r.severity === "medium" ? "#fff4e5" : "#e8f4fd", color: r.severity === "high" ? "#ff3b30" : r.severity === "medium" ? "#ff9500" : "#0071e3" }}>{r.severity}</span></td>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{r.threshold_value}</td>
+                  <td><span className="badge" style={{ background: r.severity === "high" ? "rgba(255,56,73,0.1)" : r.severity === "medium" ? "rgba(255,149,0,0.1)" : "rgba(23,131,255,0.1)", color: r.severity === "high" ? "#ff3849" : r.severity === "medium" ? "#ff9500" : "#1783ff" }}>{r.severity}</span></td>
+                  <td style={{ fontFamily: "var(--font-mono)" }}>{r.threshold_value}</td>
                   <td>{r.enabled ? "Yes" : "No"}</td>
                   <td>
                     <div className="flex items-center gap-1">
                       <button className="btn" style={{ fontSize: 11, padding: "2px 8px" }} onClick={() => startEdit(r)}>Edit</button>
-                      <button className="btn" style={{ fontSize: 11, padding: "2px 8px", color: "#ff3b30" }} onClick={() => deleteMut.mutate(r.id)}>Del</button>
+                      <button className="btn" style={{ fontSize: 11, padding: "2px 8px", color: "#ff3849" }} onClick={() => deleteMut.mutate(r.id)}>Del</button>
                     </div>
                   </td>
                 </tr>
               ))}
               {(!rules || rules.length === 0) && (
-                <tr><td colSpan={7} style={{ textAlign: "center", color: "#aeaeb2", padding: 16 }}>No alert rules configured.</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--label-3)", padding: 16 }}>No alert rules configured.</td></tr>
               )}
             </tbody>
           </table>

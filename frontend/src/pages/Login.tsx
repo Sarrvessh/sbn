@@ -43,7 +43,7 @@ export default function Login() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%)",
+        background: "linear-gradient(135deg, var(--bg) 0%, var(--separator-soft) 100%)",
         padding: 24,
         position: "relative",
         overflow: "hidden",
@@ -58,7 +58,7 @@ export default function Login() {
           height: 600,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(0,113,227,0.08) 0%, rgba(0,113,227,0.02) 50%, transparent 70%)",
+            "radial-gradient(circle, rgba(23,131,255,0.08) 0%, rgba(23,131,255,0.02) 50%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -70,7 +70,7 @@ export default function Login() {
           width: 500,
           height: 500,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(0,113,227,0.06) 0%, transparent 60%)",
+          background: "radial-gradient(circle, rgba(23,131,255,0.06) 0%, transparent 60%)",
           pointerEvents: "none",
         }}
       />
@@ -106,7 +106,7 @@ export default function Login() {
               position: "absolute",
               inset: 0,
               borderRadius: "50%",
-              border: "2px solid rgba(0,113,227,0.12)",
+              border: "2px solid rgba(23,131,255,0.12)",
               animation: "spin 8s linear infinite",
             }}
           />
@@ -115,7 +115,7 @@ export default function Login() {
               position: "absolute",
               inset: 4,
               borderRadius: "50%",
-              border: "1.5px dashed rgba(0,113,227,0.08)",
+              border: "1.5px dashed rgba(23,131,255,0.08)",
               animation: "spin 12s linear infinite reverse",
             }}
           />
@@ -124,7 +124,7 @@ export default function Login() {
               width: 56,
               height: 56,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #0071e3 0%, #0051a8 100%)",
+              background: "linear-gradient(135deg, #1783ff 0%, #0d63d8 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -132,7 +132,7 @@ export default function Login() {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              boxShadow: "0 4px 16px rgba(0,113,227,0.3)",
+              boxShadow: "0 4px 16px rgba(23,131,255,0.3)",
             }}
           >
             <Radar size={26} color="#ffffff" />
@@ -143,17 +143,17 @@ export default function Login() {
           style={{
             fontSize: 24,
             fontWeight: 700,
-            color: "#1d1d1f",
+            color: "var(--label-1)",
             margin: "0 0 4px",
             letterSpacing: "-0.003em",
           }}
         >
-          SBN <span style={{ fontWeight: 500, color: "#6e6e73" }}>- ARMS</span>
+          SBN <span style={{ fontWeight: 500, color: "var(--label-2)" }}>- ARMS</span>
         </h1>
         <p
           style={{
             fontSize: 14,
-            color: "#6e6e73",
+            color: "var(--label-2)",
             margin: "0 0 32px",
             lineHeight: 1.4,
           }}
@@ -166,7 +166,7 @@ export default function Login() {
             style={{
               fontSize: 12,
               fontWeight: 500,
-              color: "#6e6e73",
+              color: "var(--label-2)",
               display: "block",
               marginBottom: 6,
             }}
@@ -181,7 +181,7 @@ export default function Login() {
                 left: 12,
                 top: "50%",
                 transform: "translateY(-50%)",
-                color: "#aeaeb2",
+                color: "var(--label-3)",
                 pointerEvents: "none",
               }}
             />
@@ -193,13 +193,13 @@ export default function Login() {
               autoFocus
               style={{
                 width: "100%",
-                fontFamily: "'Inter', system-ui, sans-serif",
+                fontFamily: "var(--font-ui)",
                 fontSize: 14,
                 padding: "12px 40px 12px 38px",
-                border: error ? "1px solid #ff3b30" : "1px solid #d2d2d7",
+                border: error ? "1px solid #ff3849" : "1px solid var(--separator)",
                 borderRadius: 10,
                 background: "#ffffff",
-                color: "#1d1d1f",
+                color: "var(--label-1)",
                 outline: "none",
                 transition: "border-color 0.15s ease, box-shadow 0.15s ease",
                 appearance: "none",
@@ -207,11 +207,11 @@ export default function Login() {
                 boxSizing: "border-box",
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = error ? "#ff3b30" : "#0071e3";
-                if (!error) e.target.style.boxShadow = "0 0 0 3px rgba(0,113,227,0.12)";
+                e.target.style.borderColor = error ? "#ff3849" : "#1783ff";
+                if (!error) e.target.style.boxShadow = "0 0 0 3px rgba(23,131,255,0.12)";
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = error ? "#ff3b30" : "#d2d2d7";
+                e.target.style.borderColor = error ? "#ff3849" : "var(--separator)";
                 e.target.style.boxShadow = "none";
               }}
             />
@@ -226,7 +226,7 @@ export default function Login() {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "#aeaeb2",
+                color: "var(--label-3)",
                 padding: 4,
                 display: "flex",
               }}
@@ -242,10 +242,10 @@ export default function Login() {
                 alignItems: "center",
                 gap: 8,
                 fontSize: 12,
-                color: "#ff3b30",
+                color: "#ff3849",
                 margin: "0 0 16px",
                 padding: "8px 12px",
-                background: "#ffeeee",
+                background: "rgba(255,56,73,0.1)",
                 borderRadius: 8,
               }}
             >
@@ -266,9 +266,9 @@ export default function Login() {
               border: "none",
               background:
                 checking || !key.trim()
-                  ? "#e8e8ed"
-                  : "linear-gradient(135deg, #0071e3 0%, #0051a8 100%)",
-              color: checking || !key.trim() ? "#aeaeb2" : "#ffffff",
+                  ? "var(--separator-soft)"
+                  : "linear-gradient(135deg, #1783ff 0%, #0d63d8 100%)",
+              color: checking || !key.trim() ? "var(--label-3)" : "#ffffff",
               fontSize: 14,
               fontWeight: 500,
               cursor: checking || !key.trim() ? "not-allowed" : "pointer",
@@ -277,7 +277,7 @@ export default function Login() {
               alignItems: "center",
               justifyContent: "center",
               gap: 8,
-              fontFamily: "'Inter', system-ui, sans-serif",
+              fontFamily: "var(--font-ui)",
             }}
             onMouseEnter={(e) => {
               if (!checking && key.trim()) e.currentTarget.style.opacity = "0.9";
@@ -299,13 +299,13 @@ export default function Login() {
           style={{
             marginTop: 28,
             paddingTop: 20,
-            borderTop: "1px solid #e8e8ed",
+            borderTop: "1px solid var(--separator-soft)",
           }}
         >
           <p
             style={{
               fontSize: 11,
-              color: "#aeaeb2",
+              color: "var(--label-3)",
               margin: 0,
               lineHeight: 1.5,
             }}

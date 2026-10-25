@@ -39,8 +39,8 @@ export default function ProjectDetail() {
     setDeleting(false);
   };
 
-  if (isLoading) return <div className="page"><div style={{ fontSize: 13, color: "#6e6e73" }}>Loading project…</div></div>;
-  if (!project) return <div className="page"><div style={{ fontSize: 13, color: "#ff3b30" }}>Project not found.</div></div>;
+  if (isLoading) return <div className="page"><div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading project…</div></div>;
+  if (!project) return <div className="page"><div style={{ fontSize: 13, color: "#ff3849" }}>Project not found.</div></div>;
 
   return (
     <div className="page">
@@ -51,7 +51,7 @@ export default function ProjectDetail() {
       <div className="flex items-start justify-between" style={{ marginBottom: 24 }}>
         <div>
           <h1 className="page-title" style={{ fontSize: 24 }}>{project.name}</h1>
-          {project.description && <p style={{ fontSize: 12, color: "#6e6e73", marginTop: 2 }}>{project.description}</p>}
+          {project.description && <p style={{ fontSize: 12, color: "var(--label-2)", marginTop: 2 }}>{project.description}</p>}
         </div>
         <div className="flex flex-col items-end gap-1">
           <button
@@ -63,7 +63,7 @@ export default function ProjectDetail() {
             <Trash2 size={12} />
             {deleting ? "..." : "Delete Project"}
           </button>
-          {deleteError && <span style={{ fontSize: 11, color: "#ff3b30" }}>{deleteError}</span>}
+          {deleteError && <span style={{ fontSize: 11, color: "#ff3849" }}>{deleteError}</span>}
         </div>
       </div>
 
@@ -89,15 +89,15 @@ export default function ProjectDetail() {
       <div className="metrics" style={{ marginBottom: 24, gridTemplateColumns: "repeat(3, 1fr)" }}>
         <div className="metric-card">
           <div className="metric-label">Total Tokens</div>
-          <div className="metric-value" style={{ fontSize: 14, fontFamily: "'JetBrains Mono', monospace" }}>{project.total_tokens}</div>
+          <div className="metric-value" style={{ fontSize: 14, fontFamily: "var(--font-mono)" }}>{project.total_tokens}</div>
         </div>
         <div className="metric-card">
           <div className="metric-label">Models Used</div>
-          <div className="metric-value" style={{ fontSize: 13, fontFamily: "'Inter', sans-serif" }}>{(project.models_used || []).join(", ") || "—"}</div>
+          <div className="metric-value" style={{ fontSize: 13, fontFamily: "var(--font-ui)" }}>{(project.models_used || []).join(", ") || "—"}</div>
         </div>
         <div className="metric-card">
           <div className="metric-label">First Trace</div>
-          <div className="metric-value" style={{ fontSize: 13, fontFamily: "'Inter', sans-serif" }}>{formatTime(project.first_trace_at)}</div>
+          <div className="metric-value" style={{ fontSize: 13, fontFamily: "var(--font-ui)" }}>{formatTime(project.first_trace_at)}</div>
         </div>
       </div>
 
@@ -119,21 +119,21 @@ export default function ProjectDetail() {
           </thead>
           <tbody>
             {(traces || []).length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: "center", color: "#aeaeb2", padding: 32 }}>No traces yet.</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--label-3)", padding: 32 }}>No traces yet.</td></tr>
             ) : (
               (traces || []).map((t: RecentTrace) => (
                 <tr key={t.request_id} onClick={() => navigate(`/traces/${t.request_id}`)} style={{ cursor: "pointer" }}>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{t.request_id}</td>
-                  <td style={{ fontSize: 12, color: "#6e6e73" }}>{t.model_name}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{t.total_tokens}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{formatCost(t.cost)}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{formatLatency(t.latency_ms)}</td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 11, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{t.request_id}</td>
+                  <td style={{ fontSize: 12, color: "var(--label-2)" }}>{t.model_name}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 11 }}>{t.total_tokens}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 11 }}>{formatCost(t.cost)}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 11 }}>{formatLatency(t.latency_ms)}</td>
                   <td>
                     <span className={`status-label ${t.status === "success" ? "green" : "red"}`}>
                       <span className={`status-dot ${t.status === "success" ? "green" : "red"}`} />{t.status}
                     </span>
                   </td>
-                  <td style={{ fontSize: 11, color: "#6e6e73" }}>{formatTime(t.timestamp)}</td>
+                  <td style={{ fontSize: 11, color: "var(--label-2)" }}>{formatTime(t.timestamp)}</td>
                 </tr>
               ))
             )}

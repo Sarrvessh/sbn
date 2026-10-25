@@ -5,7 +5,7 @@ import { useState } from "react";
 import MetricCard from "../components/MetricCard";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Legend } from "recharts";
 
-const COLORS = ["#0071e3", "#34c759", "#ff9500", "#ff3b30", "#5e5ce6", "#64d2ff", "#ff2d55", "#30d158"];
+const COLORS = ["#1783ff", "#16c456", "#ff9500", "#ff3849", "#5e5ce6", "#64d2ff", "#ff2d55", "#30d158"];
 
 export default function Costs() {
   const [projectFilter, setProjectFilter] = useState("");
@@ -81,13 +81,13 @@ export default function Costs() {
           <div className="section-card-body">
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={dailyData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6e6e73" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#6e6e73" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${v.toFixed(2)}`} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--label-2)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--label-2)" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${v.toFixed(2)}`} />
                 <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e5ea", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid var(--separator-soft)", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
                   formatter={(value: number, name: string) => [formatCost(value), name === "cost" ? "Cost" : "Traces"]}
                 />
-                <Bar dataKey="cost" fill="#0071e3" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <Bar dataKey="cost" fill="#1783ff" radius={[4, 4, 0, 0]} maxBarSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -108,21 +108,21 @@ export default function Costs() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e5ea", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid var(--separator-soft)", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
                   formatter={(value: number) => [formatCost(value), "Cost"]}
                 />
               </PieChart>
             </ResponsiveContainer>
             <div style={{ flex: 1 }}>
               {modelData.map((m: { name: string; value: number; tokens: number; traces: number }, i: number) => (
-                <div key={m.name} className="flex items-center justify-between" style={{ padding: "4px 0", borderBottom: "1px solid #f5f5f7" }}>
+                <div key={m.name} className="flex items-center justify-between" style={{ padding: "4px 0", borderBottom: "1px solid var(--bg)" }}>
                   <div className="flex items-center gap-2">
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[i % COLORS.length], display: "inline-block" }} />
                     <span style={{ fontSize: 12 }}>{m.name}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#6e6e73" }}>{formatCost(m.value)}</span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#aeaeb2" }}>{m.traces} traces</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--label-2)" }}>{formatCost(m.value)}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--label-3)" }}>{m.traces} traces</span>
                   </div>
                 </div>
               ))}
@@ -136,8 +136,8 @@ export default function Costs() {
           <div className="section-card-header">
             <div className="section-card-title">Cost Forecast</div>
             <span className="badge" style={{
-              background: costPrediction.confidence === "high" ? "#e8f4fd" : costPrediction.confidence === "medium" ? "#fff4e5" : "#ffeeee",
-              color: costPrediction.confidence === "high" ? "#0071e3" : costPrediction.confidence === "medium" ? "#ff9500" : "#ff3b30",
+              background: costPrediction.confidence === "high" ? "rgba(23,131,255,0.1)" : costPrediction.confidence === "medium" ? "rgba(255,149,0,0.1)" : "rgba(255,56,73,0.1)",
+              color: costPrediction.confidence === "high" ? "#1783ff" : costPrediction.confidence === "medium" ? "#ff9500" : "#ff3849",
               fontSize: 10,
             }}>
               {costPrediction.confidence} confidence
@@ -151,14 +151,14 @@ export default function Costs() {
             </div>
             <ResponsiveContainer width="100%" height={220}>
               <ComposedChart data={costPrediction.daily_predictions} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6e6e73" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#6e6e73" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${v.toFixed(3)}`} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--label-2)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--label-2)" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${v.toFixed(3)}`} />
                 <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e5ea", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid var(--separator-soft)", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
                   formatter={(value: number) => [formatCost(value)]}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="actual_cost" name="Actual" fill="#0071e3" radius={[4, 4, 0, 0]} maxBarSize={24} />
+                <Bar dataKey="actual_cost" name="Actual" fill="#1783ff" radius={[4, 4, 0, 0]} maxBarSize={24} />
                 <Line dataKey="predicted_cost" name="Predicted" stroke="#ff9500" strokeWidth={2} strokeDasharray="4 3" dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
@@ -184,12 +184,12 @@ export default function Costs() {
               {(costs?.by_project || []).map((p: { project_name: string; total_cost: number; total_tokens: number; trace_count: number }) => (
                 <tr key={p.project_name}>
                   <td style={{ fontWeight: 500 }}>{p.project_name}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{formatCost(p.total_cost)}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{p.total_tokens}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{p.trace_count}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{formatCost(p.total_cost)}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{p.total_tokens}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{p.trace_count}</td>
                 </tr>
               ))}
-              {(!costs?.by_project || costs.by_project.length === 0) && <tr><td colSpan={4} style={{ textAlign: "center", color: "#aeaeb2", padding: 24 }}>No project cost data.</td></tr>}
+              {(!costs?.by_project || costs.by_project.length === 0) && <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--label-3)", padding: 24 }}>No project cost data.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -215,20 +215,20 @@ export default function Costs() {
               {(costs?.teams || []).map((t: { name: string; total_cost: number; total_tokens: number; budget: number; trace_count: number }) => (
                 <tr key={t.name}>
                   <td style={{ fontWeight: 500 }}>{t.name}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{formatCost(t.total_cost)}</td>
-                  <td style={{ textAlign: "right", color: "#aeaeb2" }}>{t.budget > 0 ? formatCost(t.budget) : "—"}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{formatCost(t.total_cost)}</td>
+                  <td style={{ textAlign: "right", color: "var(--label-3)" }}>{t.budget > 0 ? formatCost(t.budget) : "—"}</td>
                   <td style={{ textAlign: "right" }}>
                     {t.budget > 0 ? (
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: (t.total_cost / t.budget) >= 0.8 ? "#ff3b30" : "#34c759" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: (t.total_cost / t.budget) >= 0.8 ? "#ff3849" : "#16c456" }}>
                         {((t.total_cost / t.budget) * 100).toFixed(1)}%
                       </span>
-                    ) : <span style={{ color: "#aeaeb2" }}>—</span>}
+                    ) : <span style={{ color: "var(--label-3)" }}>—</span>}
                   </td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{t.trace_count}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{t.total_tokens}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{t.trace_count}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{t.total_tokens}</td>
                 </tr>
               ))}
-              {(!costs?.teams || costs.teams.length === 0) && <tr><td colSpan={6} style={{ textAlign: "center", color: "#aeaeb2", padding: 24 }}>No team data.</td></tr>}
+              {(!costs?.teams || costs.teams.length === 0) && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--label-3)", padding: 24 }}>No team data.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -250,12 +250,12 @@ export default function Costs() {
             <tbody>
               {(audits || []).slice(0, 30).map((a: { id: number; created_at: string; action: string; details: Record<string, unknown> | null }) => (
                 <tr key={a.id}>
-                  <td style={{ color: "#aeaeb2", fontSize: 12 }}>{a.created_at ? new Date(a.created_at).toLocaleString() : "—"}</td>
+                  <td style={{ color: "var(--label-3)", fontSize: 12 }}>{a.created_at ? new Date(a.created_at).toLocaleString() : "—"}</td>
                   <td><span className="badge blue">{a.action}</span></td>
-                  <td className="truncate" style={{ color: "#6e6e73", maxWidth: 300 }}>{a.details ? JSON.stringify(a.details) : "—"}</td>
+                  <td className="truncate" style={{ color: "var(--label-2)", maxWidth: 300 }}>{a.details ? JSON.stringify(a.details) : "—"}</td>
                 </tr>
               ))}
-              {(!audits || audits.length === 0) && <tr><td colSpan={3} style={{ textAlign: "center", color: "#aeaeb2", padding: 24 }}>No audit logs yet.</td></tr>}
+              {(!audits || audits.length === 0) && <tr><td colSpan={3} style={{ textAlign: "center", color: "var(--label-3)", padding: 24 }}>No audit logs yet.</td></tr>}
             </tbody>
           </table>
         </div>

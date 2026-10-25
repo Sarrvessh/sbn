@@ -5,6 +5,7 @@ import { fetchRecentTraces, fetchProjects, exportTraces } from "../lib/api";
 import { formatCost, formatLatency, formatTime } from "../lib/utils";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 import SkeletonTable from "../components/SkeletonTable";
+import { useToast } from "../components/ui/Toast";
 import type { RecentTrace } from "../lib/api";
 
 const PAGE_SIZE = 50;
@@ -43,19 +44,19 @@ function TableView({
         <tbody>
           {filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((t) => (
             <tr key={t.request_id} onClick={() => onNavigate(t.request_id)}>
-              <td style={{ color: "#aeaeb2", fontSize: 12 }}>{formatTime(t.timestamp)}</td>
+              <td style={{ color: "var(--label-3)", fontSize: 12 }}>{formatTime(t.timestamp)}</td>
               <td style={{ fontWeight: 500 }}>{t.project_name}</td>
-              <td style={{ color: "#6e6e73" }}>{t.model_name}</td>
+              <td style={{ color: "var(--label-2)" }}>{t.model_name}</td>
               <td><span className={`status-label ${t.status === "success" ? "green" : "red"}`} style={{ fontSize: 12 }}><span className={`status-dot ${t.status === "success" ? "green" : "red"}`} />{t.status}</span></td>
-              <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{formatLatency(t.latency_ms)}</td>
-              <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{t.total_tokens}</td>
-              <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{formatCost(t.cost)}</td>
-              <td className="truncate" style={{ color: "#aeaeb2", maxWidth: 200, fontSize: 12 }}>{t.prompt_preview}</td>
-              <td className="truncate" style={{ color: "#aeaeb2", maxWidth: 200, fontSize: 12 }}>{t.response_preview}</td>
+              <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{formatLatency(t.latency_ms)}</td>
+              <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{t.total_tokens}</td>
+              <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{formatCost(t.cost)}</td>
+              <td className="truncate" style={{ color: "var(--label-3)", maxWidth: 200, fontSize: 12 }}>{t.prompt_preview}</td>
+              <td className="truncate" style={{ color: "var(--label-3)", maxWidth: 200, fontSize: 12 }}>{t.response_preview}</td>
             </tr>
           ))}
           {filtered.length === 0 && (
-            <tr><td colSpan={9} style={{ textAlign: "center", color: "#aeaeb2", padding: 32 }}>{search ? "No matching traces" : "No traces yet"}</td></tr>
+            <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--label-3)", padding: 32 }}>{search ? "No matching traces" : "No traces yet"}</td></tr>
           )}
         </tbody>
       </table>
@@ -70,13 +71,13 @@ function PageFooter({ count, page, onPageChange }: { count: number; page: number
   const totalPages = Math.ceil(count / PAGE_SIZE);
 
   return (
-    <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid #e8e8ed" }}>
-      <span style={{ fontSize: 12, color: "#aeaeb2" }}>{count} traces</span>
+    <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid var(--separator-soft)" }}>
+      <span style={{ fontSize: 12, color: "var(--label-3)" }}>{count} traces</span>
       <div className="flex items-center gap-2">
         <button onClick={() => onPageChange(Math.max(0, page - 1))} disabled={page === 0} className="btn btn-secondary btn-sm" style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 2 }}>
           <ChevronLeft size={12} /> Prev
         </button>
-        <span style={{ fontSize: 12, color: "#6e6e73" }}>Page {page + 1} of {totalPages}</span>
+        <span style={{ fontSize: 12, color: "var(--label-2)" }}>Page {page + 1} of {totalPages}</span>
         <button onClick={() => onPageChange(page + 1)} disabled={(page + 1) * PAGE_SIZE >= count} className="btn btn-secondary btn-sm" style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 2 }}>
           Next <ChevronRight size={12} />
         </button>
@@ -87,6 +88,7 @@ function PageFooter({ count, page, onPageChange }: { count: number; page: number
 
 export default function Traces() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [projectFilter, setProjectFilter] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
@@ -105,7 +107,10 @@ export default function Traces() {
     setExporting(true);
     try {
       await exportTraces(exportFormat, projectFilter || undefined, exportRedact);
-    } catch (err) { alert("Export failed: " + err); }
+      toast.success(`Traces exported as ${exportFormat.toUpperCase()}`);
+    } catch (err) {
+      toast.error("Export failed — " + String(err));
+    }
     setExporting(false);
   };
 
@@ -120,8 +125,8 @@ export default function Traces() {
             <option value="json">JSON</option>
             <option value="csv">CSV</option>
           </select>
-          <label className="flex items-center gap-1" style={{ fontSize: 11, color: "#6e6e73", cursor: "pointer" }}>
-            <input type="checkbox" checked={exportRedact} onChange={(e) => setExportRedact(e.target.checked)} style={{ accentColor: "#0071e3" }} />
+          <label className="flex items-center gap-1" style={{ fontSize: 11, color: "var(--label-2)", cursor: "pointer" }}>
+            <input type="checkbox" checked={exportRedact} onChange={(e) => setExportRedact(e.target.checked)} style={{ accentColor: "#1783ff" }} />
             Redact
           </label>
           <button onClick={handleExport} disabled={exporting} className="btn btn-primary btn-sm" style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 4 }}>

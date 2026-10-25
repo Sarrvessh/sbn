@@ -18,8 +18,8 @@ export default function Oversight() {
     <div className="page">
       <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
         <h1 className="page-title">Oversight</h1>
-        <label className="flex items-center gap-1.5" style={{ fontSize: 12, color: "#6e6e73", cursor: "pointer" }}>
-          <input type="checkbox" checked={redact} onChange={(e) => setRedact(e.target.checked)} style={{ accentColor: "#0071e3" }} />
+        <label className="flex items-center gap-1.5" style={{ fontSize: 12, color: "var(--label-2)", cursor: "pointer" }}>
+          <input type="checkbox" checked={redact} onChange={(e) => setRedact(e.target.checked)} style={{ accentColor: "#1783ff" }} />
           Redact PII
         </label>
       </div>
@@ -55,25 +55,25 @@ function PendingReviews({ redact }: { redact: boolean }) {
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReasons, setRejectReasons] = useState<Record<string, string>>({});
 
-  if (isLoading) return <div style={{ fontSize: 13, color: "#6e6e73" }}>Loading…</div>;
-  if (!data || data.length === 0) return <div style={{ fontSize: 13, color: "#aeaeb2" }}>No pending reviews.</div>;
+  if (isLoading) return <div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading…</div>;
+  if (!data || data.length === 0) return <div style={{ fontSize: 13, color: "var(--label-3)" }}>No pending reviews.</div>;
 
   return (
     <div>
-      {reviewError && <div className="alert-banner" style={{ marginBottom: 12, color: "#ff3b30", fontSize: 12 }}>{reviewError}</div>}
+      {reviewError && <div className="alert-banner" style={{ marginBottom: 12, color: "#ff3849", fontSize: 12 }}>{reviewError}</div>}
       {data.map((r: { request_id: string; prompt_preview: string; response_preview: string }) => (
         <div key={r.request_id} className="section-card">
           <div className="section-card-header">
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#aeaeb2" }}>{r.request_id}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--label-3)" }}>{r.request_id}</span>
           </div>
           <div className="section-card-body">
             <div className="flex gap-4" style={{ marginBottom: 12 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, color: "#aeaeb2", marginBottom: 4 }}>Prompt</div>
+                <div style={{ fontSize: 11, color: "var(--label-3)", marginBottom: 4 }}>Prompt</div>
                 <pre className="code-block" style={{ maxHeight: 80, overflow: "auto", fontSize: 11 }}>{r.prompt_preview || "(empty)"}</pre>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, color: "#aeaeb2", marginBottom: 4 }}>Response</div>
+                <div style={{ fontSize: 11, color: "var(--label-3)", marginBottom: 4 }}>Response</div>
                 <pre className="code-block" style={{ maxHeight: 80, overflow: "auto", fontSize: 11 }}>{r.response_preview || "(empty)"}</pre>
               </div>
             </div>
@@ -116,8 +116,8 @@ function ReviewedReviews({ redact }: { redact: boolean }) {
     queryKey: ["reviews", "reviewed", redact],
     queryFn: () => fetchReviewed(redact),
   });
-  if (isLoading) return <div style={{ fontSize: 13, color: "#6e6e73" }}>Loading…</div>;
-  if (!data || data.length === 0) return <div style={{ fontSize: 13, color: "#aeaeb2" }}>No reviewed items yet.</div>;
+  if (isLoading) return <div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading…</div>;
+  if (!data || data.length === 0) return <div style={{ fontSize: 13, color: "var(--label-3)" }}>No reviewed items yet.</div>;
   return (
     <div className="section-card" style={{ overflow: "auto" }}>
       <table className="apple-table">
@@ -137,12 +137,12 @@ function ReviewedReviews({ redact }: { redact: boolean }) {
             const status = lr?.decision || "pending";
             return (
               <tr key={lr?.id ?? r.request_id}>
-                <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#aeaeb2" }}>{r.request_id}</td>
+                <td style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--label-3)" }}>{r.request_id}</td>
                 <td><span className={`status-label ${status === "approved" ? "green" : "red"}`} style={{ fontSize: 12 }}><span className={`status-dot ${status === "approved" ? "green" : "red"}`} />{status}</span></td>
-                <td style={{ color: "#6e6e73" }}>{lr?.reviewer || "—"}</td>
-                <td className="truncate" style={{ color: "#aeaeb2", maxWidth: 120 }}>{lr?.notes || "—"}</td>
-                <td className="truncate" style={{ color: "#aeaeb2", maxWidth: 150 }}>{r.prompt_preview}</td>
-                <td className="truncate" style={{ color: "#aeaeb2", maxWidth: 150 }}>{r.response_preview}</td>
+                <td style={{ color: "var(--label-2)" }}>{lr?.reviewer || "—"}</td>
+                <td className="truncate" style={{ color: "var(--label-3)", maxWidth: 120 }}>{lr?.notes || "—"}</td>
+                <td className="truncate" style={{ color: "var(--label-3)", maxWidth: 150 }}>{r.prompt_preview}</td>
+                <td className="truncate" style={{ color: "var(--label-3)", maxWidth: 150 }}>{r.response_preview}</td>
               </tr>
             );
           })}
@@ -167,7 +167,7 @@ function GovernancePanel() {
     } catch (err) { setTestResult({ decision: "error", matched_policies: [{ policy_name: String(err) }] }); }
   };
 
-  if (isLoading) return <div style={{ fontSize: 13, color: "#6e6e73" }}>Loading…</div>;
+  if (isLoading) return <div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading…</div>;
 
   return (
     <div>
@@ -190,15 +190,15 @@ function GovernancePanel() {
             <tbody>
               {(policies || []).map((p: { id: number; name: string; action: string; policy_type: string; rule_config: Record<string, unknown>; enabled: boolean }) => (
                 <tr key={p.id}>
-                  <td style={{ color: "#aeaeb2" }}>{p.id}</td>
+                  <td style={{ color: "var(--label-3)" }}>{p.id}</td>
                   <td style={{ fontWeight: 500 }}>{p.name}</td>
                   <td><span className={`badge ${p.action === "block" ? "red" : p.action === "flag" ? "orange" : "blue"}`}>{p.action}</span></td>
-                  <td style={{ color: "#6e6e73" }}>{p.policy_type}</td>
-                  <td className="truncate" style={{ color: "#aeaeb2", maxWidth: 150, fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{JSON.stringify(p.rule_config)}</td>
+                  <td style={{ color: "var(--label-2)" }}>{p.policy_type}</td>
+                  <td className="truncate" style={{ color: "var(--label-3)", maxWidth: 150, fontFamily: "var(--font-mono)", fontSize: 11 }}>{JSON.stringify(p.rule_config)}</td>
                   <td><span className={`status-label ${p.enabled ? "green" : "gray"}`} style={{ fontSize: 12 }}><span className={`status-dot ${p.enabled ? "green" : "gray"}`} />{p.enabled ? "enabled" : "disabled"}</span></td>
                 </tr>
               ))}
-              {(!policies || policies.length === 0) && <tr><td colSpan={6} style={{ textAlign: "center", color: "#aeaeb2", padding: 24 }}>No policies defined.</td></tr>}
+              {(!policies || policies.length === 0) && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--label-3)", padding: 24 }}>No policies defined.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -218,9 +218,9 @@ function GovernancePanel() {
             <button onClick={handleTest} className="btn btn-primary btn-sm">Test</button>
           </div>
           {testResult && (
-            <div style={{ fontSize: 12, color: testResult.decision === "block" ? "#ff3b30" : testResult.decision === "flag" ? "#ff9500" : "#34c759" }}>
+            <div style={{ fontSize: 12, color: testResult.decision === "block" ? "#ff3849" : testResult.decision === "flag" ? "#ff9500" : "#16c456" }}>
               Decision: {testResult.decision}
-              {testResult.matched_policies.length > 0 && <div style={{ color: "#6e6e73", marginTop: 4 }}>Matched: {testResult.matched_policies.map((p) => p.policy_name).join(", ")}</div>}
+              {testResult.matched_policies.length > 0 && <div style={{ color: "var(--label-2)", marginTop: 4 }}>Matched: {testResult.matched_policies.map((p) => p.policy_name).join(", ")}</div>}
             </div>
           )}
         </div>
@@ -246,15 +246,15 @@ function EscalationRulesPanel() {
     onError: (err) => { setEscalationError(String(err)); setTimeout(() => setEscalationError(null), 3000); },
   });
 
-  if (isLoading) return <div style={{ fontSize: 13, color: "#6e6e73" }}>Loading…</div>;
+  if (isLoading) return <div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading…</div>;
 
   return (
     <div>
       <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
-        <p style={{ fontSize: 13, color: "#6e6e73" }}>Escalation rules for flagged content</p>
+        <p style={{ fontSize: 13, color: "var(--label-2)" }}>Escalation rules for flagged content</p>
         <button onClick={() => setShowForm(!showForm)} className="btn btn-primary btn-sm">+ Add Rule</button>
       </div>
-      {escalationError && <div style={{ color: "#ff3b30", fontSize: 12, marginBottom: 8 }}>{escalationError}</div>}
+      {escalationError && <div style={{ color: "#ff3849", fontSize: 12, marginBottom: 8 }}>{escalationError}</div>}
 
       {showForm && (
         <div className="section-card" style={{ marginBottom: 16 }}>
@@ -310,17 +310,17 @@ function EscalationRulesPanel() {
           <tbody>
             {(rules || []).map((r: { id: number; rule_type: string; rule_config: Record<string, unknown>; target_role: string; description: string | null }) => (
               <tr key={r.id}>
-                <td style={{ color: "#aeaeb2" }}>{r.id}</td>
+                <td style={{ color: "var(--label-3)" }}>{r.id}</td>
                 <td><span className="badge blue">{r.rule_type}</span></td>
-                <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#6e6e73", maxWidth: 160 }} className="truncate">{JSON.stringify(r.rule_config)}</td>
-                <td style={{ color: "#6e6e73" }}>{r.target_role}</td>
-                <td className="truncate" style={{ color: "#aeaeb2", maxWidth: 200 }}>{r.description || "—"}</td>
+                <td style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--label-2)", maxWidth: 160 }} className="truncate">{JSON.stringify(r.rule_config)}</td>
+                <td style={{ color: "var(--label-2)" }}>{r.target_role}</td>
+                <td className="truncate" style={{ color: "var(--label-3)", maxWidth: 200 }}>{r.description || "—"}</td>
                 <td style={{ textAlign: "center" }}>
                   <button onClick={() => deleteMut.mutate(r.id)} className="btn btn-danger btn-sm" style={{ padding: "2px 8px", fontSize: 11 }}>Delete</button>
                 </td>
               </tr>
             ))}
-            {(!rules || rules.length === 0) && <tr><td colSpan={6} style={{ textAlign: "center", color: "#aeaeb2", padding: 24 }}>No escalation rules defined.</td></tr>}
+            {(!rules || rules.length === 0) && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--label-3)", padding: 24 }}>No escalation rules defined.</td></tr>}
           </tbody>
         </table>
       </div>

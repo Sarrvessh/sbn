@@ -80,16 +80,16 @@ export default function Webhooks() {
               </div>
               <div className="flex gap-3">
                 <input value={formData.secret} onChange={(e) => setFormData({ ...formData, secret: e.target.value })} placeholder="Secret (optional)" type="password" className="input" style={{ flex: 1 }} />
-                <label className="flex items-center gap-2" style={{ fontSize: 12, color: "#6e6e73", cursor: "pointer" }}>
-                  <input type="checkbox" checked={formData.enabled} onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })} style={{ accentColor: "#0071e3" }} />
+                <label className="flex items-center gap-2" style={{ fontSize: 12, color: "var(--label-2)", cursor: "pointer" }}>
+                  <input type="checkbox" checked={formData.enabled} onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })} style={{ accentColor: "#1783ff" }} />
                   Enabled
                 </label>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: "#6e6e73", marginBottom: 6 }}>Events</div>
+                <div style={{ fontSize: 11, color: "var(--label-2)", marginBottom: 6 }}>Events</div>
                 <div className="flex flex-wrap gap-2">
                   {EVENT_OPTIONS.map((ev) => (
-                    <label key={ev} className="flex items-center gap-1.5" style={{ fontSize: 11, cursor: "pointer", padding: "4px 8px", borderRadius: 6, background: formData.events.includes(ev) ? "#0071e3" : "#f5f5f7", color: formData.events.includes(ev) ? "#fff" : "#6e6e73" }}>
+                    <label key={ev} className="flex items-center gap-1.5" style={{ fontSize: 11, cursor: "pointer", padding: "4px 8px", borderRadius: 6, background: formData.events.includes(ev) ? "#1783ff" : "var(--bg)", color: formData.events.includes(ev) ? "#fff" : "var(--label-2)" }}>
                       <input type="checkbox" checked={formData.events.includes(ev)} onChange={() => toggleEvent(ev)} style={{ display: "none" }} />
                       {ev}
                     </label>
@@ -121,15 +121,15 @@ export default function Webhooks() {
           </thead>
           <tbody>
             {!webhooks || webhooks.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: "center", color: "#aeaeb2", padding: 32 }}>No webhooks configured.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--label-3)", padding: 32 }}>No webhooks configured.</td></tr>
             ) : (
               webhooks.map((w) => (
                 <tr key={w.id}>
                   <td style={{ fontWeight: 500 }}>{w.name}</td>
-                  <td style={{ color: "#6e6e73", fontSize: 12, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis" }}>{w.url}</td>
+                  <td style={{ color: "var(--label-2)", fontSize: 12, maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis" }}>{w.url}</td>
                   <td style={{ fontSize: 11 }}>{(w.events || []).slice(0, 2).join(", ")}{(w.events || []).length > 2 ? ` +${w.events.length - 2}` : ""}</td>
                   <td><span className={`status-label ${w.enabled ? "green" : "gray"}`} style={{ fontSize: 11 }}><span className={`status-dot ${w.enabled ? "green" : "gray"}`} />{w.enabled ? "active" : "disabled"}</span></td>
-                  <td style={{ color: "#aeaeb2", fontSize: 11 }}>{formatTime(w.updated_at)}</td>
+                  <td style={{ color: "var(--label-3)", fontSize: 11 }}>{formatTime(w.updated_at)}</td>
                   <td style={{ textAlign: "center" }}>
                     <div className="flex items-center gap-1" style={{ justifyContent: "center" }}>
                       <button onClick={() => { setShowForm(true); startEdit(w); }} className="btn btn-secondary btn-sm" style={{ padding: "2px 6px", fontSize: 10 }}><Edit3 size={12} /></button>
@@ -155,7 +155,7 @@ export default function Webhooks() {
             <button onClick={handleTest} className="btn btn-primary btn-sm" style={{ display: "flex", alignItems: "center", gap: 4 }}><Send size={12} /> Test</button>
           </div>
           {testResult && (
-            <div style={{ fontSize: 12, padding: 8, borderRadius: 6, background: testResult.success ? "#e8f4fd" : "#ffeeee", color: testResult.success ? "#0071e3" : "#ff3b30" }}>
+            <div style={{ fontSize: 12, padding: 8, borderRadius: 6, background: testResult.success ? "rgba(23,131,255,0.1)" : "rgba(255,56,73,0.1)", color: testResult.success ? "#1783ff" : "#ff3849" }}>
               {testResult.success ? <><Check size={12} /> Delivered (HTTP {testResult.status_code})</> : <><X size={12} /> Failed: {testResult.error || `HTTP ${testResult.status_code}`}</>}
               {testResult.response_body && <pre className="code-block" style={{ marginTop: 4, fontSize: 11, maxHeight: 100 }}>{testResult.response_body}</pre>}
             </div>
@@ -181,18 +181,18 @@ function DeliveriesPanel({ webhookId, onClose }: { webhookId: number; onClose: (
       </div>
       <div className="section-card-body" style={{ paddingTop: 0 }}>
         {!deliveries || deliveries.length === 0 ? (
-          <div style={{ fontSize: 12, color: "#aeaeb2", padding: 12 }}>No deliveries yet.</div>
+          <div style={{ fontSize: 12, color: "var(--label-3)", padding: 12 }}>No deliveries yet.</div>
         ) : (
           deliveries.map((d) => (
-            <div key={d.id} className="flex items-start gap-3" style={{ padding: "8px 0", borderBottom: "1px solid #f5f5f7", fontSize: 12 }}>
+            <div key={d.id} className="flex items-start gap-3" style={{ padding: "8px 0", borderBottom: "1px solid var(--bg)", fontSize: 12 }}>
               <span className={`status-dot ${d.status === "success" ? "green" : "red"}`} />
               <div style={{ flex: 1 }}>
                 <div className="flex items-center gap-2">
                   <span className="badge" style={{ fontSize: 10 }}>{d.event_type}</span>
-                  <span style={{ color: d.status === "success" ? "#34c759" : "#ff3b30", fontWeight: 500 }}>{d.status}</span>
-                  {d.status_code && <span style={{ color: "#aeaeb2" }}>HTTP {d.status_code}</span>}
+                  <span style={{ color: d.status === "success" ? "#16c456" : "#ff3849", fontWeight: 500 }}>{d.status}</span>
+                  {d.status_code && <span style={{ color: "var(--label-3)" }}>HTTP {d.status_code}</span>}
                 </div>
-                <div style={{ color: "#aeaeb2", fontSize: 11 }}>{formatTime(d.delivered_at)}</div>
+                <div style={{ color: "var(--label-3)", fontSize: 11 }}>{formatTime(d.delivered_at)}</div>
                 {d.response_body && <pre className="code-block" style={{ marginTop: 4, fontSize: 10, maxHeight: 80 }}>{d.response_body}</pre>}
               </div>
             </div>

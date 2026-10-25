@@ -1,14 +1,15 @@
 """initial_tables
 
 Revision ID: d8ef9e277c02
-Revises: 
+Revises:
 Create Date: 2026-06-16 13:02:11.294960
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision: str = 'd8ef9e277c02'
 down_revision: Union[str, Sequence[str], None] = None
@@ -33,7 +34,7 @@ def upgrade() -> None:
             sa.Column('cost', sa.Numeric(12, 6), nullable=False, server_default=sa.text('0')),
             sa.Column('latency_ms', sa.Float(), nullable=False),
             sa.Column('status', sa.String(length=20), nullable=False),
-            sa.Column('flagged_for_governance', sa.Boolean(), nullable=False, server_default=sa.text('0')),
+            sa.Column('flagged_for_governance', sa.Boolean(), nullable=False, server_default=sa.text('false')),
             sa.Column('timestamp', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
             sa.PrimaryKeyConstraint('id'),
         )
@@ -52,7 +53,7 @@ def upgrade() -> None:
             sa.Column('role', sa.String(length=20), nullable=False),
             sa.Column('project_scope', sa.String(length=255), nullable=True),
             sa.Column('description', sa.String(length=255), nullable=True),
-            sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('1')),
+            sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('true')),
             sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
             sa.PrimaryKeyConstraint('id'),
         )

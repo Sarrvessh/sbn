@@ -5,6 +5,7 @@ import { fetchMetrics, fetchGovernanceMetrics, fetchSystemMetrics, fetchRecentTr
 import { useRealtimeEvents } from "../hooks/useWebSocket";
 import { formatCost, formatLatency, formatShortTime } from "../lib/utils";
 import MetricCard from "../components/MetricCard";
+import Modal from "../components/ui/Modal";
 import { Play, ChevronRight } from "lucide-react";
 
 export default function Dashboard() {
@@ -77,18 +78,18 @@ export default function Dashboard() {
 
   return (
     <div className="page">
-      <div className="flex items-center justify-between" style={{ marginBottom: 24 }}>
+      <div className="page-header">
         <div>
           <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle" style={{ marginBottom: 0 }}>Real-time observability across your AI agents</p>
+          <p className="page-subtitle">Real-time observability across your AI agents</p>
         </div>
-        <div className="flex items-center gap-2">
-          <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="input" style={{ width: "auto", minWidth: 130, fontSize: 12 }}>
+        <div className="page-header-actions">
+          <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="input" style={{ width: "auto", minWidth: 140, fontSize: 12, minHeight: 32 }}>
             <option value="">All Projects</option>
             {projects?.map((p) => (<option key={p.name} value={p.name}>{p.name}</option>))}
           </select>
-          <button onClick={() => setShowRun(!showRun)} className="btn btn-primary btn-sm">
-            <Play size={13} /> Run Agent
+          <button onClick={() => setShowRun(true)} className="btn btn-accent">
+            <Play size={15} /> Run Agent
           </button>
         </div>
       </div>
@@ -125,12 +126,12 @@ export default function Dashboard() {
               <MetricCard label="Rejected" value={String(governance.rejected_reviews)} subtitle="Rejected reviews" red />
             </div>
             {governance.by_severity.length > 0 && (
-              <div className="flex items-center gap-4" style={{ fontSize: 12, color: "#6e6e73" }}>
-                <span style={{ fontWeight: 500, color: "#1d1d1f" }}>Policies by severity:</span>
+              <div className="flex items-center gap-4" style={{ fontSize: 12, color: "var(--label-2)" }}>
+                <span style={{ fontWeight: 500, color: "var(--label-1)" }}>Policies by severity:</span>
                 {governance.by_severity.map((s: { severity: string; count: number }) => (
                   <span key={s.severity} className="badge" style={{
-                    background: s.severity === "high" ? "#ffeeee" : s.severity === "medium" ? "#fff4e5" : "#e8f4fd",
-                    color: s.severity === "high" ? "#ff3b30" : s.severity === "medium" ? "#ff9500" : "#0071e3",
+                    background: s.severity === "high" ? "rgba(255,56,73,0.1)" : s.severity === "medium" ? "rgba(255,149,0,0.1)" : "rgba(23,131,255,0.1)",
+                    color: s.severity === "high" ? "#ff3849" : s.severity === "medium" ? "#ff9500" : "#1783ff",
                   }}>
                     {s.severity}: {s.count}
                   </span>
@@ -139,13 +140,13 @@ export default function Dashboard() {
             )}
             {governance.recent_flags.length > 0 && (
               <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 11, color: "#aeaeb2", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>Recent Flags</div>
+                <div style={{ fontSize: 11, color: "var(--label-3)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>Recent Flags</div>
                 <div className="flex flex-col gap-1">
                   {governance.recent_flags.map((f: { request_id: string; project_name: string; status: string }) => (
                     <div key={f.request_id} className="flex items-center gap-2" style={{ fontSize: 12 }}>
                       <span className={`status-dot ${f.status === "error" ? "red" : "orange"}`} />
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{f.request_id.slice(0, 16)}...</span>
-                      <span style={{ color: "#6e6e73" }}>{f.project_name}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>{f.request_id.slice(0, 16)}...</span>
+                      <span style={{ color: "var(--label-2)" }}>{f.project_name}</span>
                       <span className="badge" style={{ fontSize: 10 }}>{f.status}</span>
                     </div>
                   ))}
@@ -156,42 +157,62 @@ export default function Dashboard() {
         </div>
       )}
 
-      {showRun && (
-        <div className="section-card" style={{ marginBottom: 24 }}>
-          <div className="section-card-header">
-            <div className="section-card-title">Run Live Agent</div>
+      <Modal
+        open={showRun}
+        size="medium"
+        title="Run Live Agent"
+        description="Execute an agent run against the live backend and inspect the result inline."
+        onClose={() => setShowRun(false)}
+        footer={
+          <>
+            <button type="button" onClick={() => setShowRun(false)} className="btn btn-secondary">Cancel</button>
+            <button type="submit" form="run-agent-form" disabled={runLoading} className="btn btn-primary">
+              {runLoading ? "Running…" : "Execute"}
+            </button>
+          </>
+        }
+      >
+        <form id="run-agent-form" onSubmit={handleRun} className="flex flex-col gap-3">
+          <div className="flex gap-3">
+            <div className="field" style={{ flex: 1 }}>
+              <label className="field-label">Project</label>
+              <input name="project_name" placeholder="Project" defaultValue={projectFilter || "default"} key={projectFilter || "default"} className="input" />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label className="field-label">Model</label>
+              <input name="model_name" placeholder="Model" defaultValue="gpt-4o-mini" className="input" />
+            </div>
           </div>
-          <div className="section-card-body">
-            <form onSubmit={handleRun} className="flex flex-col gap-3">
-              <div className="flex gap-3">
-                <input name="project_name" placeholder="Project" defaultValue={projectFilter || "default"} key={projectFilter || "default"} className="input" style={{ flex: 1 }} />
-                <input name="model_name" placeholder="Model" defaultValue="gpt-4o-mini" className="input" style={{ flex: 1 }} />
-                <input name="max_tokens" type="number" placeholder="Max tokens" defaultValue={512} className="input" style={{ flex: 0.5 }} />
-                <input name="temperature" type="number" step="0.1" placeholder="Temp" defaultValue={0.2} className="input" style={{ flex: 0.5 }} />
-              </div>
-              <textarea name="prompt" placeholder="Enter a prompt..." rows={2} className="input" required />
-              <div className="flex gap-2">
-                <button type="submit" disabled={runLoading} className="btn btn-primary">{runLoading ? "Running…" : "Execute"}</button>
-                <button type="button" onClick={() => setShowRun(false)} className="btn btn-secondary">Cancel</button>
-              </div>
-            </form>
-            {runError && <div className="alert-banner error mt-2">{runError}</div>}
-            {runResult && (
-              <div className="mt-3">
-                <pre className="code-block" style={{ maxHeight: 150, overflow: "auto" }}>{runResult.response || ""}</pre>
-                <div className="flex gap-4 mt-1" style={{ fontSize: 12, color: "#6e6e73" }}>
-                  <span>{formatLatency(runResult.latency_ms)}</span>
-                  <span>{(runResult.total_tokens ?? 0)} tokens</span>
-                  <span>{formatCost(runResult.cost)}</span>
-                  <span style={{ color: runResult.flagged_for_governance ? "#ff3b30" : "#34c759" }}>
-                    {runResult.flagged_for_governance ? "Flagged" : "Clean"}
-                  </span>
-                </div>
-              </div>
-            )}
+          <div className="flex gap-3">
+            <div className="field" style={{ flex: 1 }}>
+              <label className="field-label">Max tokens</label>
+              <input name="max_tokens" type="number" placeholder="512" defaultValue={512} className="input" />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label className="field-label">Temperature</label>
+              <input name="temperature" type="number" step="0.1" placeholder="0.2" defaultValue={0.2} className="input" />
+            </div>
           </div>
-        </div>
-      )}
+          <div className="field">
+            <label className="field-label">Prompt</label>
+            <textarea name="prompt" placeholder="Enter a prompt…" rows={3} className="input" required />
+          </div>
+        </form>
+        {runError && <div className="alert-banner error" style={{ margin: "12px 0 0" }}>{runError}</div>}
+        {runResult && (
+          <div className="mt-3">
+            <pre className="code-block" style={{ maxHeight: 180, overflow: "auto", whiteSpace: "pre-wrap" }}>{runResult.response || ""}</pre>
+            <div className="flex gap-4 mt-2" style={{ fontSize: 12, color: "var(--label-2)" }}>
+              <span>{formatLatency(runResult.latency_ms)}</span>
+              <span>{(runResult.total_tokens ?? 0)} tokens</span>
+              <span>{formatCost(runResult.cost)}</span>
+              <span style={{ color: runResult.flagged_for_governance ? "var(--red)" : "var(--green)", fontWeight: 500 }}>
+                {runResult.flagged_for_governance ? "Flagged" : "Clean"}
+              </span>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <div className="metrics">
         <MetricCard label="Total Cost" value={metrics ? formatCost(metrics.total_cost) : "—"} subtitle="All time spend" />
@@ -223,14 +244,14 @@ export default function Dashboard() {
             <tbody>
               {traces?.slice(0, 8).map((t) => (
                 <tr key={t.request_id} onClick={() => navigate(`/traces/${t.request_id}`)}>
-                  <td style={{ color: "#aeaeb2", fontSize: 12 }}>{formatShortTime(t.timestamp)}</td>
+                  <td style={{ color: "var(--label-3)", fontSize: 12 }}>{formatShortTime(t.timestamp)}</td>
                   <td style={{ fontWeight: 500 }}>{t.project_name}</td>
                   <td><span className={`status-label ${t.status === "success" ? "green" : "red"}`} style={{ fontSize: 12 }}><span className={`status-dot ${t.status === "success" ? "green" : "red"}`} />{t.status}</span></td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{formatLatency(t.latency_ms)}</td>
-                  <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#6e6e73" }}>{t.total_tokens}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{formatLatency(t.latency_ms)}</td>
+                  <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--label-2)" }}>{t.total_tokens}</td>
                 </tr>
               ))}
-              {(!traces || traces.length === 0) && <tr><td colSpan={5} style={{ textAlign: "center", color: "#aeaeb2", padding: 24, fontSize: 13 }}>No traces yet</td></tr>}
+              {(!traces || traces.length === 0) && <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--label-3)", padding: 24, fontSize: 13 }}>No traces yet</td></tr>}
             </tbody>
           </table>
         </div>
@@ -249,15 +270,15 @@ export default function Dashboard() {
               <li key={`${a.request_id}-${a.alert_type}`}>
                 <div className="flex items-center gap-2">
                   <span className={`status-dot ${a.severity === "high" ? "red" : a.severity === "medium" ? "orange" : "blue"}`} />
-                  <span className="badge" style={{ background: a.severity === "high" ? "#ffeeee" : a.severity === "medium" ? "#fff4e5" : "#e8f4fd", color: a.severity === "high" ? "#ff3b30" : a.severity === "medium" ? "#ff9500" : "#0071e3" }}>
+                  <span className="badge" style={{ background: a.severity === "high" ? "rgba(255,56,73,0.1)" : a.severity === "medium" ? "rgba(255,149,0,0.1)" : "rgba(23,131,255,0.1)", color: a.severity === "high" ? "#ff3849" : a.severity === "medium" ? "#ff9500" : "#1783ff" }}>
                     {a.severity}
                   </span>
-                  <span style={{ color: "#1d1d1f", fontWeight: 500 }}>{a.alert_type}</span>
-                  <span className="truncate" style={{ color: "#6e6e73", maxWidth: 300 }}>{a.message}</span>
+                  <span style={{ color: "var(--label-1)", fontWeight: 500 }}>{a.alert_type}</span>
+                  <span className="truncate" style={{ color: "var(--label-2)", maxWidth: 300 }}>{a.message}</span>
                 </div>
               </li>
             ))}
-            {(!alerts || alerts.length === 0) && <li style={{ cursor: "default", color: "#aeaeb2" }}>No alerts</li>}
+            {(!alerts || alerts.length === 0) && <li style={{ cursor: "default", color: "var(--label-3)" }}>No alerts</li>}
           </ul>
         </div>
       </div>

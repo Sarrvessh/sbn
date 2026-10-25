@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
+import { ToastProvider } from "./components/ui/Toast";
 import Dashboard from "./pages/Dashboard";
 import Traces from "./pages/Traces";
 import TraceDetail from "./pages/TraceDetail";
@@ -30,7 +31,8 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <Routes>
+    <ToastProvider>
+      <Routes>
       <Route path="/" element={<GuestRoute><Login /></GuestRoute>} />
       <Route
         element={
@@ -55,6 +57,7 @@ export default function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
-    </Routes>
+      </Routes>
+    </ToastProvider>
   );
 }

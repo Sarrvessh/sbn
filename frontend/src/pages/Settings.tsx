@@ -38,7 +38,7 @@ export default function Settings() {
     updateMut.mutate(payload);
   };
 
-  if (isLoading) return <div className="page"><div style={{ fontSize: 13, color: "#6e6e73" }}>Loading settings…</div></div>;
+  if (isLoading) return <div className="page"><div style={{ fontSize: 13, color: "var(--label-2)" }}>Loading settings…</div></div>;
 
   const sdkSnippet = `from sbn_sdk import SbnTracer
 
@@ -52,7 +52,7 @@ tracer = SbnTracer(
     <div className="page">
       <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
         <h1 className="page-title">Settings</h1>
-        {feedback && <span style={{ fontSize: 12, color: feedback.startsWith("Error") ? "#ff3b30" : "#34c759" }}>{feedback}</span>}
+        {feedback && <span style={{ fontSize: 12, color: feedback.startsWith("Error") ? "#ff3849" : "#16c456" }}>{feedback}</span>}
       </div>
       <p className="page-subtitle">Configure platform behavior and integrations</p>
 
@@ -73,21 +73,21 @@ tracer = SbnTracer(
                 <div className="flex flex-col gap-3">
                   <div className="flex gap-4">
                     <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Default Agent Model</label>
+                      <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Default Agent Model</label>
                       <input name="default_agent_model" defaultValue={settings?.default_agent_model ?? ""} className="input" />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Max Tokens</label>
+                      <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Max Tokens</label>
                       <input name="max_tokens" type="number" defaultValue={settings?.max_tokens ?? 1024} className="input" />
                     </div>
                   </div>
                   <div className="flex gap-4">
                     <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Temperature</label>
+                      <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Temperature</label>
                       <input name="temperature" type="number" step="0.1" defaultValue={settings?.temperature ?? 0.2} className="input" />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Budget Alert Threshold (%)</label>
+                      <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Budget Alert Threshold (%)</label>
                       <input name="budget_alert_threshold_pct" type="number" defaultValue={settings?.budget_alert_threshold_pct ?? 80} className="input" />
                     </div>
                   </div>
@@ -101,8 +101,8 @@ tracer = SbnTracer(
               </div>
               <div className="section-card-body">
                 <div className="flex items-center gap-4">
-                  <input type="range" min="0" max="100" value={samplingRate} onChange={(e) => setSamplingRate(Number(e.target.value))} style={{ flex: 1, accentColor: "#0071e3" }} />
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 16, fontWeight: 600, color: "#1d1d1f", minWidth: 48 }}>{samplingRate}%</span>
+                  <input type="range" min="0" max="100" value={samplingRate} onChange={(e) => setSamplingRate(Number(e.target.value))} style={{ flex: 1, accentColor: "#1783ff" }} />
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 600, color: "var(--label-1)", minWidth: 48 }}>{samplingRate}%</span>
                 </div>
                 <input type="hidden" name="sampling_rate" value={samplingRate} />
               </div>
@@ -118,19 +118,19 @@ tracer = SbnTracer(
             <div className="section-card-body">
               <div className="flex flex-col gap-3">
                 <div>
-                  <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>OpenAI API Key</label>
+                  <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>OpenAI API Key</label>
                   <input name="openai_api_key" type="password" defaultValue={settings?.openai_api_key ? "••••••••" : ""} className="input" />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>OpenAI Base URL</label>
+                  <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>OpenAI Base URL</label>
                   <input name="openai_base_url" defaultValue={settings?.openai_base_url || "https://openrouter.ai/api/v1"} className="input" />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>OpenAI Referer</label>
+                  <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>OpenAI Referer</label>
                   <input name="openai_referer" defaultValue={settings?.openai_referer || ""} className="input" />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>OpenAI App Title</label>
+                  <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>OpenAI App Title</label>
                   <input name="openai_app_title" defaultValue={settings?.openai_app_title || ""} className="input" />
                 </div>
               </div>
@@ -145,7 +145,7 @@ tracer = SbnTracer(
                 <div className="section-card-title">Google ADK</div>
               </div>
               <div className="section-card-body">
-                <p style={{ fontSize: 12, color: "#6e6e73", margin: "0 0 8px" }}>sbn_sdk integration for Google Agent Development Kit</p>
+                <p style={{ fontSize: 12, color: "var(--label-2)", margin: "0 0 8px" }}>sbn_sdk integration for Google Agent Development Kit</p>
                 <pre className="code-block" style={{ fontSize: 11 }}>{`from sbn_sdk.integrations.google_adk import instrument_runner
 instrument_runner(tracer)`}</pre>
               </div>
@@ -155,7 +155,7 @@ instrument_runner(tracer)`}</pre>
                 <div className="section-card-title">OCR Tracing</div>
               </div>
               <div className="section-card-body">
-                <p style={{ fontSize: 12, color: "#6e6e73", margin: "0 0 8px" }}>Trace OCR (Optical Character Recognition) operations</p>
+                <p style={{ fontSize: 12, color: "var(--label-2)", margin: "0 0 8px" }}>Trace OCR (Optical Character Recognition) operations</p>
                 <pre className="code-block" style={{ fontSize: 11 }}>{`from sbn_sdk.integrations.ocr import instrument_pytesseract
 instrument_pytesseract(tracer)`}</pre>
               </div>
@@ -169,7 +169,7 @@ instrument_pytesseract(tracer)`}</pre>
               <div className="section-card-title">SDK Configuration</div>
             </div>
             <div className="section-card-body">
-              <p style={{ fontSize: 12, color: "#6e6e73", margin: "0 0 8px" }}>Use this snippet to configure the SBN — ARMS SDK in your application.</p>
+              <p style={{ fontSize: 12, color: "var(--label-2)", margin: "0 0 8px" }}>Use this snippet to configure the SBN — ARMS SDK in your application.</p>
               <pre className="code-block dark" style={{ fontSize: 12 }}>{sdkSnippet}</pre>
             </div>
           </div>

@@ -35,9 +35,9 @@ function DiffText({ text, compareText }: { text: string; compareText?: string })
     <span style={{ whiteSpace: "pre-wrap" }}>
       {parts.map((p, i) => (
         <span key={i} style={{
-          background: p.removed ? "#ffeeee" : p.added ? "#e8fde8" : "transparent",
+          background: p.removed ? "rgba(255,56,73,0.1)" : p.added ? "rgba(22,196,86,0.1)" : "transparent",
           textDecoration: p.removed ? "line-through" : "none",
-          color: p.removed ? "#ff3b30" : p.added ? "#34c759" : "inherit",
+          color: p.removed ? "#ff3849" : p.added ? "#16c456" : "inherit",
           borderRadius: 2, padding: "0 1px",
         }}>{p.text}</span>
       ))}
@@ -68,22 +68,22 @@ function TracePanel({ trace, compareTrace, label, onRemove }: { trace: TraceDeta
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: "#aeaeb2", textTransform: "uppercase", marginBottom: 4 }}>Prompt</div>
+          <div style={{ fontSize: 11, color: "var(--label-3)", textTransform: "uppercase", marginBottom: 4 }}>Prompt</div>
           <div className="code-block" style={{ fontSize: 12, maxHeight: 150, overflow: "auto", whiteSpace: "pre-wrap" }}>
             <DiffText text={trace.prompt} compareText={compareTrace?.prompt} />
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: "#aeaeb2", textTransform: "uppercase", marginBottom: 4 }}>Response</div>
+          <div style={{ fontSize: 11, color: "var(--label-3)", textTransform: "uppercase", marginBottom: 4 }}>Response</div>
           <div className="code-block" style={{ fontSize: 12, maxHeight: 200, overflow: "auto", whiteSpace: "pre-wrap" }}>
             <DiffText text={trace.response} compareText={compareTrace?.response} />
           </div>
         </div>
-        <div style={{ fontSize: 11, color: "#6e6e73" }}>
+        <div style={{ fontSize: 11, color: "var(--label-2)" }}>
           <span style={{ fontWeight: 500 }}>{trace.project_name}</span> &middot; {trace.model_name} &middot; <span className={`status-label ${trace.status === "success" ? "green" : "red"}`} style={{ fontSize: 10 }}><span className={`status-dot ${trace.status === "success" ? "green" : "red"}`} />{trace.status}</span>
           {trace.flagged_for_governance && <span className="status-label orange" style={{ marginLeft: 6, fontSize: 10 }}>Flagged</span>}
         </div>
-        <div style={{ fontSize: 11, color: "#aeaeb2" }}>{formatTime(trace.timestamp)}</div>
+        <div style={{ fontSize: 11, color: "var(--label-3)" }}>{formatTime(trace.timestamp)}</div>
       </div>
     </div>
   );
@@ -126,14 +126,14 @@ export default function TraceCompare() {
         <div className="section-card-body">
           <div className="flex gap-3" style={{ marginBottom: 8 }}>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Trace A</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Trace A</label>
               <select value={leftId} onChange={(e) => setLeftId(e.target.value)} className="input" style={{ width: "100%", fontSize: 12 }}>
                 <option value="">Select trace…</option>
                 {(search ? filtered : allTraces || []).map((t) => <option key={t.request_id} value={t.request_id}>{t.request_id.slice(0, 16)}… ({t.project_name})</option>)}
               </select>
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Trace B</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Trace B</label>
               <select value={rightId} onChange={(e) => setRightId(e.target.value)} className="input" style={{ width: "100%", fontSize: 12 }}>
                 <option value="">Select trace…</option>
                 {(search ? filtered : allTraces || []).map((t) => <option key={t.request_id} value={t.request_id}>{t.request_id.slice(0, 16)}… ({t.project_name})</option>)}
@@ -141,7 +141,7 @@ export default function TraceCompare() {
             </div>
           </div>
           <div>
-            <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Search traces</label>
+            <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Search traces</label>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by ID or project…" className="input" style={{ width: "100%", fontSize: 12 }} />
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function TraceCompare() {
       {leftTrace && rightTrace ? (
         <div className="flex gap-4" style={{ alignItems: "flex-start" }}>
           <TracePanel trace={leftTrace} compareTrace={rightTrace} label="Trace A" onRemove={() => setLeftId("")} />
-          <div style={{ padding: "40px 8px 0", color: "#aeaeb2" }}>
+          <div style={{ padding: "40px 8px 0", color: "var(--label-3)" }}>
             <ArrowRight size={20} />
             <ArrowLeft size={20} style={{ marginTop: -8 }} />
           </div>
@@ -159,20 +159,20 @@ export default function TraceCompare() {
       ) : leftTrace ? (
         <div className="flex gap-4">
           <TracePanel trace={leftTrace} label="Trace A" onRemove={() => setLeftId("")} />
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#aeaeb2", fontSize: 13, minHeight: 300 }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--label-3)", fontSize: 13, minHeight: 300 }}>
             Select a trace for side B to compare
           </div>
         </div>
       ) : rightTrace ? (
         <div className="flex gap-4">
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#aeaeb2", fontSize: 13, minHeight: 300 }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--label-3)", fontSize: 13, minHeight: 300 }}>
             Select a trace for side A to compare
           </div>
           <TracePanel trace={rightTrace} label="Trace B" onRemove={() => setRightId("")} />
         </div>
       ) : (
         <div className="section-card">
-          <div className="section-card-body" style={{ textAlign: "center", padding: 48, color: "#aeaeb2" }}>
+          <div className="section-card-body" style={{ textAlign: "center", padding: 48, color: "var(--label-3)" }}>
             Select two traces above to compare their prompts, responses, and metrics
           </div>
         </div>

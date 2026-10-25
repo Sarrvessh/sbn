@@ -59,11 +59,11 @@ export default function Teams() {
           <div className="section-card-header"><div className="section-card-title">Create Team</div></div>
           <div className="section-card-body" style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Team Name</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Team Name</label>
               <input value={newName} onChange={(e) => setNewName(e.target.value)} className="input" placeholder="engineering" style={{ width: "100%" }} />
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Description</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Description</label>
               <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} className="input" placeholder="Engineering team" style={{ width: "100%" }} />
             </div>
             <button onClick={() => createMut.mutate()} disabled={!newName.trim() || createMut.isPending} className="btn btn-primary btn-sm" style={{ height: 34 }}>{createMut.isPending ? "…" : "Create"}</button>
@@ -76,13 +76,13 @@ export default function Teams() {
           <div className="section-card-header"><div className="section-card-title">Set Budget</div></div>
           <div className="section-card-body" style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
             <div>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Month</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Month</label>
               <select value={budgetMonth} onChange={(e) => setBudgetMonth(e.target.value)} className="input" style={{ fontSize: 12 }}>
                 {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4 }}>Budget ($)</label>
+              <label style={{ fontSize: 11, color: "var(--label-2)", display: "block", marginBottom: 4 }}>Budget ($)</label>
               <input value={budgetAmount} onChange={(e) => setBudgetAmount(e.target.value)} type="number" step="0.01" className="input" placeholder="100.00" style={{ width: 140 }} />
             </div>
             <button onClick={() => createBudgetMut.mutate()} disabled={!budgetAmount || createBudgetMut.isPending} className="btn btn-primary btn-sm" style={{ height: 34 }}>{createBudgetMut.isPending ? "…" : "Save"}</button>
@@ -104,7 +104,7 @@ export default function Teams() {
           </thead>
           <tbody>
             {!teams || teams.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "#aeaeb2", padding: 32 }}>No teams yet. Create one to get started.</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--label-3)", padding: 32 }}>No teams yet. Create one to get started.</td></tr>
             ) : (
               teams.map((t) => {
                 const teamBudgets = (budgets || []).filter((b) => b.team_id === t.id);
@@ -112,12 +112,12 @@ export default function Teams() {
                 return (
                   <tr key={t.id}>
                     <td style={{ fontWeight: 500 }}>{t.name}</td>
-                    <td style={{ color: "#6e6e73", fontSize: 12 }}>{t.description || "—"}</td>
-                    <td style={{ color: "#6e6e73", fontSize: 12 }}>
+                    <td style={{ color: "var(--label-2)", fontSize: 12 }}>{t.description || "—"}</td>
+                    <td style={{ color: "var(--label-2)", fontSize: 12 }}>
                       <TeamProjects teamId={t.id} allProjects={allProjects || []} />
                     </td>
                     <td style={{ textAlign: "right" }}>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#6e6e73" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--label-2)" }}>
                         {totalBudget > 0 ? formatCost(totalBudget / 100) : "—"}
                       </span>
                       <button
@@ -164,8 +164,8 @@ export default function Teams() {
                 return (
                   <tr key={b.id}>
                     <td>{teamName}</td>
-                    <td style={{ color: "#6e6e73" }}>{b.month}</td>
-                    <td style={{ textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{formatCost(b.budget_cents / 100)}</td>
+                    <td style={{ color: "var(--label-2)" }}>{b.month}</td>
+                    <td style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 11 }}>{formatCost(b.budget_cents / 100)}</td>
                     <td style={{ textAlign: "right" }}>
                       <button onClick={() => deleteBudgetMut.mutate(b.id)} className="btn btn-danger btn-sm" style={{ fontSize: 11 }}>
                         <Trash2 size={12} /> Delete
@@ -206,7 +206,7 @@ function TeamProjects({ teamId, allProjects }: { teamId: number; allProjects: { 
 
   return (
     <div>
-      {assignedNames.length === 0 ? <span style={{ color: "#aeaeb2" }}>—</span> : assignedNames.join(", ")}
+      {assignedNames.length === 0 ? <span style={{ color: "var(--label-3)" }}>—</span> : assignedNames.join(", ")}
       {adding ? (
         <div className="flex gap-1" style={{ marginTop: 4 }}>
           <select value={selected} onChange={(e) => setSelected(e.target.value)} className="input" style={{ fontSize: 11, padding: "2px 6px", width: "auto" }}>
